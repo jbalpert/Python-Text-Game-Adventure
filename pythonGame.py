@@ -6,6 +6,28 @@ import os
 choices = ["1", "2", "3", "4"]
 yes_no = ["y", "n", "Y", "N"]
 
+# class Dungeon:
+#     def __init__ (self, name, roomNum, monsters, level, boss, isGold = True, isTraps = True, isSkill = False, isShop = True):
+#         self.structure = []
+#         self.name = name
+#         self.roomNum = roomNum
+#         self.isGold = isGold
+#         self.isTraps = isTraps
+#         self.isShop = isShop
+#         self.isSkill = isSkill
+#         self.level = level
+#         self.boss = boss
+    
+#     def create(self):
+#         roomsLeft = self.roomNum
+#          = proportionRooms(self)
+#         while(total_rooms > 0)
+#             room, roomsLeft = makeRoom(rooms)
+#             self.structure.append(room)
+
+#     def makeRoom(self, roomsLeft):
+        
+
 class Item:
     def __init__ (self, name, item_type, coins=0):
         self.name = name
@@ -495,7 +517,7 @@ def battle(player, enemy):
         xpReward = randomish_num(enemy.xp)
         enemy.stats.buffStats(1.25)
         print("Congrats, you defeated the " + enemy.name)
-        print("You earned " + str(coinReward) + " coins and " + str(xpReward) + " from the fight!\n")
+        print("You earned " + str(coinReward) + " coins and " + str(xpReward) + " experience from the fight!\n")
         player.addXP(xpReward)
         player.coins += coinReward
         player.stats.food -= random_num(3)
@@ -546,8 +568,8 @@ def fight(player, enemy, turn):
 
 def printHealth(player, enemy):
     print("********************************************")
-    print(" " + stringBuilder(player.name, 12) + " hp: " + stringBuilder((str(player.stats.hp) + " / " + str(player.stats.totalHP)), 12) + "Mana: " + stringBuilder((str(player.stats.mana) + " / " + str(player.stats.totalHP)), 12))
-    print(" " + stringBuilder(enemy.name, 12) + " hp: " + stringBuilder((str(enemy.stats.hp) + " / " + str(enemy.stats.totalHP)), 12) + "Mana: " + stringBuilder((str(enemy.stats.mana) + " / " + str(enemy.stats.totalHP)), 12))
+    print(" " + stringBuilder(player.name, 12) + " hp: " + stringBuilder((str(player.stats.hp) + " / " + str(player.stats.totalHP)), 12) + "Mana: " + stringBuilder((str(player.stats.mana) + " / " + str(player.stats.int)), 12))
+    print(" " + stringBuilder(enemy.name, 12) + " hp: " + stringBuilder((str(enemy.stats.hp) + " / " + str(enemy.stats.totalHP)), 12) + "Mana: " + stringBuilder((str(enemy.stats.mana) + " / " + str(enemy.stats.int)), 12))
     print("********************************************\n")
 
 def clear():
@@ -559,7 +581,7 @@ def forest(p):
     print("Despite your concerns, you are a warrior and continue and enter the forest")
     print("Cutting through vines with your "  + p.weapon.name + " you see a path in the distance")
     while response not in yes_no:
-        response = input("Do you want to investigate the path? (Y/N)").lower()
+        response = input("Do you want to investigate the path? (Y/N)\n").lower()
         clear()
         if(response == 'y'):
             response = investFpath(p)
@@ -569,7 +591,7 @@ def forest(p):
         else:
             yesnoInputFail()
 
-def easyMonsters(version, name, coins = 10, xp = 5):
+def easyMonsters(version, name, coins = 25, xp = 25):
     stats = ""
     if(version == "fast"):
         stats = getStats(3, 200, 20, 20)
@@ -583,7 +605,7 @@ def easyMonsters(version, name, coins = 10, xp = 5):
         xp *= 4
     return Enemy(name, stats, coins, xp)
 
-def mediumMonsters(version, name, coins = 25, xp = 15):
+def mediumMonsters(version, name, coins = 75, xp = 75):
     stats = ""
     if(version == "fast"):
         stats = getStats(6, 333, 20, 35)
@@ -597,7 +619,7 @@ def mediumMonsters(version, name, coins = 25, xp = 15):
         xp *= 4
     return Enemy(name, stats, coins, xp)
 
-def hardMonsters(version, name, coins = 75, xp = 60):
+def hardMonsters(version, name, coins = 150, xp = 150):
     stats = ""
     if(version == "fast"):
         stats = getStats(15, 500, 20, 70)
@@ -632,8 +654,8 @@ def skyZone(p):
     input(" ")
     clear()
     response = ""
-    skyPaths()
     while response not in choices:
+        skyPaths()
         response = input("Select a path to choose (1, 2, 3, or 4)\n")
         clear()
         if(response == "1"):
@@ -646,6 +668,8 @@ def skyZone(p):
         elif(response == "2"):
             print("You start heading to the dungeon, when you come across a happy little cloud child")
             print("She sneezes a small puff of cloud as you pass them")
+            input(" ")
+            clear()
             print("You smile at the kid, and start walking past them, but the entire cloud you are on turns grey")
             print("The child takes the form of a demon witch and flies above you looking down upon you")
             print("YoU thInk YoU aRE goInG in My dOmaIN yOunG tRaveLer? I thInK NOT!")
@@ -653,15 +677,20 @@ def skyZone(p):
             input(" ")
             clear()
             for i in range(random_num(6)):
-                battle(p, getRandomMonster(skyCreatures))
+                monster = getRandomMonster(skyCreatures)
+                print("The witch's " + monster.name + " comes to battle you!\n" )
+                battle(p, monster)
             print("Wow I can't believe that witch spawned all those creatures on me!")
             print("HEHEHEHEHEEEEEEEE you coward face me peasant in my dungeon if you want to kill me!")
             input(" ")
             clear()
+            response = ""
         elif(response == "3"):
             chanceFate(p)
+            response = ""
         elif(response == "4"):
             chanceFate(p)
+            response = ""
         else:
             choiceInputFail()
 
@@ -701,29 +730,33 @@ def chanceFate(p):
         p.coins += 20
 
 def navigateF(p):
+    goblinStats = getStats(4, 350, 1, 30)
     goblin = Enemy("goblin", goblinStats, 6, 10)
     print("You see a many possible ways to travel")
     response = ""
-    forestPaths(p)
     while response not in choices:
-        response = input("Select a path to choose (1, 2, 3, or 4)")
+        forestPaths(p)
+        response = input("Select a path to choose (1, 2, 3, or 4)\n")
         clear()
         if(response == "1"):
             print("You start scaling the tree, branch by branch you are almost to the top")
             monster = getRandomMonster(skyCreatures)
             print("You see a " + monster.name + " on a thick tree branch.")
-            response = input("Do you want to attack it?").lower()
             while response not in yes_no:
+                response = input("Do you want to attack it? (Y/N)\n").lower()
+                clear()
                 if(response == 'y'):
                     battle(p,monster)
                 elif(response == 'n'):
                     print("The " + monster.name + " strikes you without hesitation")
                     print("You lose " + str(monster.stats.str) + " health!")
                     p.stats.hp -= monster.stats.str
+                    input(" ")
+                    clear()
                     battle(p, monster)
                 else:
                     yesnoInputFail()
-                skyZone()
+                skyZone(p)
         elif(response == "2"):
             pass
         elif(response == "3"):
@@ -755,6 +788,10 @@ def investFpath(p):
                 goblinStats = getStats(4, 350, 1, 30)
                 goblin = Enemy("goblin", goblinStats, 6, 10)
                 battle(p, goblin)
+                if(i == 1):
+                    print("The second goblin jumps and attacks you with its claws")
+                elif(i == 2):
+                    print("The last goblin jumps right into battle!")
                 input(" ")
                 clear()
             print("After you kill the goblins, you quickly go to examine the path")
@@ -763,7 +800,7 @@ def investFpath(p):
             print("Noticing footprints and what looks to be chariot tracks, realize that people are close")
             input(" ")
             clear()
-            print("Suddenly, four men in gladiator armor appear from the bushes and demand to know what you are doing")
+            print("Suddenly, four men in gladiator armor appear from the bushes and demand to know what you are doing\n")
             gladiator(p)
         else:
             yesnoInputFail()
@@ -771,6 +808,7 @@ def investFpath(p):
         navigateF(p)
 
 def gladiatorTalk(p):
+    print("Response to the gladiator:")
     print("1. I am " + p.name + " and am here to slay the dragon in the dragon's cove")
     print("2. You don't need to know who I am, leave me at once")
     print("3. I'm here to train with you because I am the chosen one")
@@ -785,33 +823,48 @@ def gladiator(p):
     response = ""
     while response not in choices:
         gladiatorTalk(p)
-        response = input("The leader of the clan states: Who are you and what do you want!?").lower()
+        response = input("The leader of the clan states: Who are you and what do you want!? (pick 1, 2, 3, or 4)").lower()
         clear()
         if(response == "1"):
             print("WHY! We pray to the dragon gods every night! You must now die! \n")
+            input(" ")
+            clear()
             for i in range(4):
                 battle(p, gladiators[i])
+            input(" ")
             clear()
             print("After defeating all the gladiators, you are confident that you can continue to inspect the path!")
+            input(" ")
+            clear()
         elif(response == "2"):
             print("Alright you aren't getting passed us!")
+            input(" ")
+            clear()
             for i in range(2):
                 battle(p, gladiators[i])
+            input(" ")
             clear()
             print("Nevermind feel free to pass us, you mean no harm to us!\n")
             print("Finally, some peace and quiet you can continue to inspect the path!")
+            input(" ")
+            clear()
         elif(response == "3"):
             print("Oh you must be octavius on the quest to kill the minotaur!\n")
+            input(" ")
             clear()
-            print("You spend quite some time training and gained skill points!")
+            print("You spend quite some time training with the gladiators and gain skill points!")
             p.stats.sp += 3
             p.skillRaise()
             print("You thank the gladiators and go on your way to continue inspecting the path")
         elif(response == "4"):
             print("Looks like this person doesn't speak lets make em' speak")
+            input(" ")
+            clear()
             battle(p, gladiators[0])
             print("They killed vlad! Noooooooooooooo!")
             print("RETREAT!")
+            input(" ")
+            clear()
         else:
             choiceInputFail()
 
@@ -870,3 +923,4 @@ print("Looking at the map you need to first travel through the forest of darknes
 input(" ")
 clear()
 forest(p)
+
