@@ -20,17 +20,37 @@ class Spell(Item):
         self.desc = description
         self.mana = mana
         self.power = power
+    def print_spell(self):
+        print("********************************")
+        print("| Spell stats :                |")
+        print("|    Name     : " + stringBuilder(self.name, 15) + "|")
+        print("|    Mana     : " + stringBuilder(self.mana, 15) + "|")
+        print("|    Power    : " + stringBuilder(self.power, 15) + "|")
+        print("********************************")
 
 class Weapon(Item):
     def __init__ (self, name, coins, damage, speed):
         super().__init__(name, "weapon", coins)
         self.damage = damage
         self.speed = speed
+    def print_weapon(self):
+        print("*******************************")
+        print("| Weapon stats:                |")
+        print("|    Name     : " + stringBuilder(self.name, 15) + "|")
+        print("|    Damage   : " + stringBuilder(self.damage, 15) + "|")
+        print("|    Speed    : " + stringBuilder(self.speed, 15) + "|")
+        print("*******************************")
 
 class Armor(Item):
     def __init__ (self, name, coins, resistance):
         super().__init__(name, "armor", coins)
         self.resistance = resistance
+    def print_armor(self):
+        print("**************************************")
+        print("| Armour stats :                     |")
+        print("|     Name     : " + stringBuilder(self.name, 20) + "|")
+        print("| Resistance   : " + stringBuilder(self.resistance, 20) + "|")
+        print("**************************************")
 
 class Food(Item):
     def __init__ (self, name, coins, rations):
@@ -51,6 +71,24 @@ class Player:
         self.armor = cloth
         self.spell = spells[0]
         self.escape = False
+        self.bossesDefeated = 0
+
+    def print_stats(self):
+        print("***********************************")
+        print("| Player stats  :                |")
+        print("|    Name       : " + stringBuilder(self.name, 15) + "|")
+        print("|    Coins      : " + stringBuilder(self.coins, 15) + "|")
+        print("| Bosses Killed : " + stringBuilder(self.bossesDefeated, 15) + "|")
+        print("***********************************")
+        pause()
+        self.weapon.print_weapon()
+        pause()
+        self.armor.print_armor()
+        pause()
+        self.spell.print_spell()
+        pause()
+        self.stats.print_all_stats()
+        pause()
 
     def addItem(self, item):
         item_type = item.type
@@ -119,8 +157,6 @@ class Player:
 
     def retreat(self):
         run = random_num(100)
-        print(run)
-        print(self.stats.dex)
         if(run < self.stats.dex):
             print("You have successfully escaped!\n")
             return True
@@ -134,8 +170,7 @@ class Player:
         while(self.stats.xp >= self.stats.xpToLevelUp):
             self.stats.xp -= self.stats.xpToLevelUp
             self.levelUp()
-        input(" ")
-        clear()
+        pause()
 
     def levelUp(self):
         print("Well done " + self.name + " you leveled up!\n")
@@ -148,8 +183,7 @@ class Player:
             skillBonus = random_numLow(skillPoints)
             print("You gained " + str(skillBonus) + " skill points for leveling up!\n")
             self.stats.sp += skillBonus
-            input(" ")
-            clear()
+            pause()
             self.skillRaise()
         print("You have " + str(self.stats.xp) + " / " + str(self.stats.xpToLevelUp) + " experience points!\n")
 
@@ -169,8 +203,7 @@ class Player:
                 response = self.skillup(response)
             else:
                 print("Please respond with 1, 2, 3, or 4!\n")
-        input(" ")
-        clear()
+        pause()
     
     def skillup(self, response):
         if(response == "1"):
@@ -195,8 +228,7 @@ class Player:
         else:
             response = ""
             return response
-        input(" ")
-        clear()
+        pause()
 class Enemy:
     def __init__(self, name, stats, coins, experience):
         self.name = name
@@ -217,9 +249,11 @@ class Enemy:
         if(hit == random.randint(math.floor(self.stats.str/2),self.stats.str)):
             print("Luckily, the " + self.name + " missed you!\n")
         elif(hit <= player.armor.resistance and player.armorCheck()):
-            print("Your " + player.armor.name + " prevented you from taking damaged\n")
+            print("Your " + player.armor.name + " prevented you from taking damage from the enemy's attack\n")
         else:
-            hit -= player.armor.resistance
+            num = random_num(4)
+            if(num == range(1,4)):
+                hit -= player.armor.resistance
             if(hit < 1):
                 hit = random_num(2)
             print("The " + self.name + " dealt " + str(hit) + " damage to the " + player.name + "\n")
@@ -242,6 +276,21 @@ class Stats:
         self.level = 1
         self.sp = 0
     
+    def print_all_stats(self):
+        print("***********************************")
+        print("|              Stats              |")
+        print("| Strength          : " + stringBuilder(self.str, 12) + "|")
+        print("| Dexterity         : " + stringBuilder(self.dex, 12) + "|")
+        print("| Intelligence      : " + stringBuilder(self.int, 12) + "|")
+        print("| Total Health      : " + stringBuilder(self.totalHP, 12) + "|")
+        print("| Hit Points        : " + stringBuilder(self.hp, 12) + "|")
+        print("| Mana              : " + stringBuilder(self.mana, 12) + "|")
+        print("| Food              : " + stringBuilder(self.food, 12) + "|")
+        print("| Experience        : " + stringBuilder(self.xp, 12) + "|")
+        print("| Experience needed : " + stringBuilder(self.xpToLevelUp, 12) + "|")
+        print("| Level             : " + stringBuilder(self.level, 12) + "|")
+        print("***********************************")
+
     def addHealth(self, amount):
         self.hp += amount
         if(self.hp > self.totalHP):
@@ -294,9 +343,9 @@ spells = [lightning, firebolt, iceshard, earthquake, tornado, plasma, sunstrike,
 
 # Potions:
 
-small_hp = Potion("Small HP potion", 15, 15)
-medium_hp = Potion("Medium HP potion", 35, 40)
-large_hp = Potion("Large HP potion", 75, 100)
+small_hp = Potion("Small HP potion", 15, 50)
+medium_hp = Potion("Medium HP potion", 35, 100)
+large_hp = Potion("Large HP potion", 75, 250)
 full_hp = Potion("Full HP potion", 100, 10000)
 
 potions = [small_hp, small_hp, medium_hp, medium_hp, small_hp, large_hp, full_hp, medium_hp, small_hp, large_hp, full_hp]
@@ -395,6 +444,7 @@ def print_store():
     print("2. " + stringBuilder(weapons[0].name, 17) + "| " + stringBuilder(weapons[0].cost, 4) + " coins")
     print("3. " + stringBuilder(food[0].name, 17) + "| " + stringBuilder(food[0].cost, 4) + " coins")
     print("4. " +  stringBuilder(armor[0].name, 17) + "| " + stringBuilder(armor[0].cost, 4) + " coins")
+    print("5. Press 5 to view your stats!")
     print("********************************\n")
 
 # Allows user to buy an item
@@ -419,7 +469,6 @@ def store_buy(item, itemArray):
 def store(enemy, coinMin):
     response = ""
     while response not in yes_no:
-        print_store()
         response = input("Would you like to buy something before going on the journey? " + "You have " + str(p.coins) + " coins to spend (Y/N)\n")
         clear()
         if (response.lower() == "y"):
@@ -431,7 +480,7 @@ def store(enemy, coinMin):
             else:
                 while response not in choices:
                     print_store()
-                    response = input("What would you like to purchase? (Type <1, 2, 3, 4> based on the corresponding items)\n")
+                    response = input("What would you like to purchase? (Type <1, 2, 3, 4, or 5> based on the corresponding items)\n")
                     clear()
                     if(response == "1"):
                         store_buy(potions[0], potions)
@@ -441,8 +490,10 @@ def store(enemy, coinMin):
                         store_buy(food[0], food)
                     elif(response == "4"):
                         store_buy(armor[0], armor)
+                    elif(response == "5"):
+                        p.print_stats()
                     else:
-                        print("Please respond with 1, 2, 3, or 4!\n")
+                        print("Please respond with 1, 2, 3, or 4 to purchase something, you're wasting electricty!\n")
         elif(response.lower() == "n"):
             response = ""
             if(p.coins <= coinMin):
@@ -478,8 +529,7 @@ def choiceInputFail():
 def storeBattle(enemy):
     print("Alright you are going to have to battle the " + enemy.name + " on my brother's farm\n")
     print("You travel a bit to the farm and see in the distance a menacing " + enemy.name + "!\n")
-    input(" ")
-    clear()
+    pause()
     battle(p, enemy)
     
 
@@ -494,13 +544,11 @@ def battle(player, enemy):
     else:
         print("Since your dexterity is lower than the enemy, you get to go second.\n")
         turn = enemy.name
-    input(" ")
-    clear()
+    pause()
     while(player.stats.hp > 0 and enemy.stats.hp > 0 and not player.escape):
         turn = fight(player, enemy, turn)
         printHealth(player, enemy)
-        input(" ")
-        clear()
+        pause()
     if(player.stats.hp <= 0):
         print("You lose! Should've trained harder! THE END! \n")
         sys.exit(":(")
@@ -510,8 +558,7 @@ def battle(player, enemy):
         enemy.coins = math.ceil(enemy_coins * .75)
         enemy.xp = math.ceil(enemy_xp * .75)
         player.escape = False
-        input(" ")
-        clear()
+        pause()
     else:
         coinReward = randomish_num(enemy.coins)
         xpReward = randomish_num(enemy.xp)
@@ -533,6 +580,7 @@ def fightMenu():
     print("2. Cast "  + stringBuilder(p.spell.name, 15) + "| " + stringBuilder(p.spell.desc, 29))
     print("3. Rest                | Gain back health and mana    ")
     print("4. Run                 | Evade fight                  ")
+    print("5. Print your statistics                              ")
     print("******************************************************\n")
     
 # Runs the battle
@@ -543,7 +591,7 @@ def fight(player, enemy, turn):
             response = ""
             printHealth(player, enemy)
             fightMenu()
-            response = input("It is your turn! (Type <1, 2, 3, or 4> based on the corresponding options to fight!)\n")
+            response = input("It is your turn! (Type <1, 2, 3, 4, or 5> based on the corresponding options to fight!)\n")
             clear()
             if(response == "1"):
                 player.attack(enemy)
@@ -554,8 +602,10 @@ def fight(player, enemy, turn):
             elif(response == "4"):
                 if(player.retreat()):
                     player.escape = True
+            elif(response == "5"):
+                player.print_stats()
             else:
-                print("You need to respond with 1, 2, 3, or you don't have enough mana to cast the spell!\n")
+                print("You need to respond with 1, 2, 3, or 4 or you don't have enough mana to cast the spell!\n")
         return enemy.name
     elif(turn == enemy.name):
         enemy.attack(player)
@@ -571,6 +621,7 @@ def clear():
     os.system('cls||clear')
 
 def forest(p):
+    continueQuest = True
     response = ""
     print("You come across a dense forest with towering trees, you have a bad feeling about this.")
     print("Despite your concerns, you are a warrior and continue and enter the forest")
@@ -579,12 +630,42 @@ def forest(p):
         response = input("Do you want to investigate the path? (Y/N)\n").lower()
         clear()
         if(response == 'y'):
-            response = investFpath(p)
+            investFpath(p)
         elif(response == 'n'):
-            response = navigateF(p)
-            print("You got so confused navigating the forest that you came back to the same first path!")
+            navigateF(p)
         else:
             yesnoInputFail()
+        if(p.bossesDefeated >= 2):
+            while response not in yes_no:
+                response = input("would you like to continue your quest (Y) or go back to the forest (N) (Y/N) \n warning you must complete another boss to come back to this message \n").lower()
+                if(response == 'y'):
+                    pass
+                elif(response == 'n'):
+                    continueQuest = False
+                else:
+                    yesnoInputFail()
+        elif(not (p.bossesDefeated >= 2) and response in yes_no):
+            print("You got so confused navigating the land that you came back to the same first path!")
+            print("Defeat two bosses to find the next piece of the map!\n")
+        if(not continueQuest):
+            response = ""
+
+
+
+        elif(response in yes_no):
+            print("You got so confused navigating the land that you came back to the same first path!")
+            print("Defeat two bosses to find the next piece of the map!\n")
+
+def labyrinth(p):
+    print("You come out of the forest more confident than ever knowing that you defeated very powerful bosses\n")
+    print("However, you know that there will be tougher challenges in the future!\n")
+    pause()
+    print("You find yourself in the village of siawathi where there are no enemies and you can finally take a break\n")
+    print("You meet some folks, grab a few drinks and feast. The people display excellent hospitality.\n")
+    pause()
+    print("After a couple of nights in the village, healing wounds and scars from monsters, you feel well rested to continue!\n")
+    print("You regain all your hunger, health, and mana throughout these nights.\n")
+    p.print_stats()
 
 def easyMonsters(version, name, coins = 25, xp = 25):
     stats = ""
@@ -603,11 +684,11 @@ def easyMonsters(version, name, coins = 25, xp = 25):
 def mediumMonsters(version, name, coins = 75, xp = 75):
     stats = ""
     if(version == "fast"):
-        stats = getStats(7, 333, 20, 35)
+        stats = getStats(12, 333, 20, 35)
     elif(version == "normal"):
-        stats = getStats(12,40,40,70)
+        stats = getStats(14,40,40,70)
     elif(version == "slow"):
-        stats = getStats(22, 10, 10, 130)
+        stats = getStats(20, 10, 10, 130)
     elif(version == "boss"):
         stats = getStats(24, 40, 40, 250)
         coins *= 4
@@ -644,41 +725,99 @@ def displayPaths(zone):
 
 zoneText = {
     "sky" : "You reach the top of the tree and find that you can magically walk on the clouds\n These clouds have a bit of a bounce to it as you hop forward\nThrough the mist, you can see a cloud shop and what looks to be a dungeon in the distance!\n",
-    "river" : "You reach the a giant flowing river and can are debating whether you should cross it\nYou keep walking toward it step by step\nYou realize that this river has some monsters nearby!\n"
+    "river" : "You reach the a giant flowing river and can are debating whether you should cross it\nYou keep walking toward it step by step\nYou realize that this river has some monsters nearby!\n",
+    "forest" : "It is incredibly difficult to see the forest as you try to navigate in utter darkness\n You see a small glimpse of light in the distance\n"
 }
 
 def preDungeon(zone):
     if(zone == "sky"):
         print("You start heading to the dungeon, when you come across a happy little cloud child")
         print("She sneezes a small puff of cloud as you pass them")
-        input(" ")
-        clear()
+        pause()
         print("You smile at the kid, and start walking past them, but the entire cloud you are on turns grey")
         print("The child takes the form of a demon witch and flies above you looking down upon you")
         print("YoU thInk YoU aRE goInG in My dOmaIN yOunG tRaveLer? I thInK NOT!")
         print("The witch spawned many monsters to try and stop you from entering the dungeon")
-        input(" ")
-        clear()
+        pause()
         for i in range(random_num(4)):
             monster = getRandomMonster(skyCreatures)
             print("The witch's " + monster.name + " comes to battle you!\n" )
             battle(p, monster)
         print("Wow I can't believe that witch spawned all those creatures on me!")
         print("HEHEHEHEHEEEEEEEE you coward face me peasant in my dungeon if you want to kill me!")
-        input(" ")
-        clear()
+        pause()
         response = ""
     elif(zone == "river"):
         print("Two dungeon guards stand before you armed with tridents\n")
         print("They instantly read your mind and know that you seek to slay the king drgaon\n")
         print("You shall not pass!\n")
-        input(" ")
-        clear()
+        pause()
         for i in range(2):
             battle(p,mediumMonsters("fast", "river guard", 45, 45))
         print("You have won, but you won't last in the dungeon!\n")
-        input(" ")
+        pause()
+    elif(zone == "forest"):
+        centaur = hardMonsters("slow", "king centaur")
+        print("You find a centaur that seems to be peaceful sharpening his axe\n")
+        print("You walk over to the centaur and find that he is alone.")
+        pause()
+        print("The centaur notices you and grips his axe waiting for you to make a move\n")
+        response = ""
+        while response not in yes_no:
+            response = input("Do you fight the centaur? (Y/N) \n").lower()
+            clear()
+            if(response == "y"):
+                print("You start rushing towards the centaur, you see that this opponent is not just any centaur,\n")
+                print("They are the king of centaurs\n")
+                pause()
+                battle(p, centaur)
+            elif(response == "n"):
+                print("You decide to be friendly towards the centaur\n")
+                talkCentaur(p)
+            else:
+                yesnoInputFail()
+            print("You find yourself walking to the dungeon and hope to survive its horrible monsters\n")
+            pause()
+def talkCentaur(p):
+    response = ""
+    while response not in yes_no:
+        response = input("Do you talk to the centaur? (Y/N) \n").lower()
         clear()
+        if(response == "y"):
+            print("You reach into your backpack and grab some leftover steak bits and offer the centaur the food\n")
+            print("Centaur: A young traveler on a journey to slay thy dragon \n")
+            print("very noble indeed, when I once was your age, I thought to bringth honor to my family\n")
+            print("I slayed the demon warrior a few years past\n")
+            pause()
+            print("The centaur grabbed the food and thanked you\n")
+            print("How do you know why I am here?\n")
+            pause()
+            print("Centaur: I am glenciotus the king of the centaurs, I know all who is living\n")
+            print("I am here in this forest because there is evil that lurks throughout this place")
+            print("This forest needs to be restored to what it once was...\n")
+            pause()
+            print("How can I help you restore the life within the forest?\n")
+            pause()
+            print("The forest lord has been corrupted by evil demons spawned by the dragon")
+            print("If you can heal the forest lord, you will save the forest!")
+            pause()
+            print("Where is the forest lord?\n")
+            print("The centaur used magic to light a path that leaded to a dark dungeon surrounded by dark vines and dead overgrown plants")
+            pause()
+            print("Go at once, and take this necklace it will provide you with magic powers")
+            print("You put on the necklace and receive +7 intelligence")
+            p.stats.int += 7
+        elif(response == "n"):
+            print("You avoid the centaur not sure if they are evil or not\n")
+            print("You hear rustling in the bushes and you get knocked out cold\n")
+            pause()
+            print("You wake up and you see 3 monsters carrying you to what looks to be a dungeon\n")
+            print("You hit one of their arms and go into battle\n")
+            for i in range(3):
+                battle(p, getRandomMonster(forestCreatures))
+        else:
+            yesnoInputFail()
+
 def directionsMenu():
     print("You enter the a room to see three other doors")
     print("Door 1: Left door")    
@@ -689,6 +828,7 @@ def dungeon(p, zone, roomNum, monsterArr, level, boss):
     print("You have reached the " + zone + " dungeon! Good Luck Warrior!\n")
     left = True
     right = True
+    isOpen = True
     for i in range(roomNum):
         response = ""
         while response not in directions:
@@ -698,25 +838,33 @@ def dungeon(p, zone, roomNum, monsterArr, level, boss):
             if response in directions:
                 if(response == "1" and left):
                     right = False
+                    isOpen = True
                     direction = "left"
                 elif(response == "2"):
+                    isOpen = True
                     right = True
                     left = True
                     direction = "center"
                 elif(response == "3" and right):
                     left = False
+                    isOpen = True
                     direction = "right"
-                dungeonFate(p, direction, monsterArr, level)
-            else:
-                print("Please pick a door please!!! (1, 2, 3)")
+                elif((response == "1" and not left) or (response == "3" and not right)):
+                    isOpen = False
+                    print("You were already in that room and it is now locked!\n")
+                else:
+                    isOpen = False
+                    print("Please pick a door please!!! (1, 2, 3)")
+                if(isOpen):
+                    dungeonFate(p, direction, monsterArr, boss, level)
     print("You have made it far through the dungeon and feel the earth shaking \n")
     print("You see the dungeon boss in the distance. The " + boss.name + "!\n")
-    input(" ")
-    clear()
+    pause()
     print("HAHAHA you think you can defeat me!? You and what army!\n")
     print("You run into battle and fight it\n")
     battle(p, boss)
-    print("You were no match for me! For I am " + p.name + "!\n")
+    p.bossesDefeated +=1
+    print("Phew, you were no match for me! For I am " + p.name + "!\n")
     print("You find a many treasure chests to loot!")
     if(level > 1.4):
         for i in range(3):
@@ -734,9 +882,8 @@ def dungeon(p, zone, roomNum, monsterArr, level, boss):
 
 def dungeonFate(p, direction, monsterArr, boss, level=1):
     print("You chose to go through the " + direction + " door!\n")
-    input(" ")
+    pause()
     response = ""
-    clear()
     chance = random_num(50)
     if(chance == 1):
         print("You find a hidden dungeon shop beneath by triggering a hidden pressure plate\n")
@@ -744,16 +891,13 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
     elif(chance in range (2,4) or chance == 24):
         monster = getRandomMonster(monsterArr)
         print("You get attacked by a " + monster.name + "!\n")
-        input(" ")
-        clear()
+        pause()
         battle(p, monster)
         print("You received a wand to teleport you back to the village shop and go back to the shop\n")
-        input(" ")
-        clear()
+        pause()
         store(wolf, 5)
         print("The wand fizzles out as you return back to the dungeon\n")
-        input(" ")
-        clear()
+        pause()
     elif(chance in range(4,6)):
         monster = getRandomMonster(monsterArr)
         choice = ""
@@ -771,8 +915,7 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
                 yesnoInputFail()
         if(ogre == "mad"):
             print("The " + monster.name + " lets out an ear piercing scream and starts charging at you!\n")
-            input(" ")
-            clear()
+            pause()
             battle(p, monster)
     elif(chance == 8):
         choice = ""
@@ -801,15 +944,13 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
             if(choice == 'y'):
                 if(p.stats.int > 45):
                     print("You start casting the dark spell, and the devil spirit starts laughing hard\n")
-                    input(" ")
-                    clear()
+                    pause()
                     print("You take in your surroundings and a green cloud of fart fills the room\n")
                     devil = "happy"
                 else:
                     print("You attempt to cast the spell, but you are not experienced enough in the art of wizardry\n")
                     print("Although the devil looks disappointed, the devil lets you pass")
-                input(" ")
-                clear()
+                pause()
             elif(choice == 'n'):
                 print("The devil looks extremely disappointed in you and takes out his blade to fight!")
                 devil = "mad"
@@ -827,8 +968,7 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
                     print("You decide not to take the ring, probably a smart idea since it came from a devil\n")            
         elif(devil == "mad"):
             print("You hurt my feelings, now you must DIE!\n")
-            input(" ")
-            clear()
+            pause()
             battle(p, mediumMonsters("fast", "mysterious devil"))
     elif(chance == 10 or chance == 11):
         choice = ""
@@ -851,8 +991,7 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
         print("You see a group of monsters in this room and don't know what to do!\n")
         print("You cast a spell that turns you invisible for 1 minute, but that's not enough time for you to get past them unnoticed\n")
         print("Specifically, you see a giant " + monsters[0].name + ", fast " + monsters[1].name + ", an angry " + monsters[2].name + ", and a fierce " + monsters[3].name + " in the room")
-        input(" ")
-        clear()
+        pause()
         fight = True
         while choice not in choices:
             print("1.) Surprise attack them with your " + p.weapon.name + "!")
@@ -958,8 +1097,7 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
                 else:
                     monster = getRandomMonster(monsterArr)
                     print("You start reading a book and fall asleep in boredom\n")
-                    input(" ")
-                    clear()
+                    pause()
                     print("You wake up with a mad " + monster.name + " right beside you. Still sleepily you go into battle\n")
                     print("Because you are sleepy, the monster is faster than it usually is\n")
                     monster.stats.dex += 150
@@ -981,8 +1119,7 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
                     outcome = "heads"
                     chance = random_num(100)
                     print("The old man states if I flip my coin and it lands on heads I win 10 coins, if it lands on tails you win\n")
-                    input(" ")
-                    clear()
+                    pause()
                     if(chance >= 60):
                         outcome = "tails"
                     print("The coin launches from the nice old man's thumb and it lands on " + outcome + "!" )
@@ -991,7 +1128,7 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
                         p.coins += 10
                     else:
                         print("You lost 10 coins")
-                        p.coin -= 10
+                        p.coins -= 10
                     choice = input("Care to play again? Y for yes or type anything for no").lower() 
                     if(choice == 'y'):
                         choice == ""
@@ -1020,8 +1157,7 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
     elif(chance in [31, 32, 33, 34, 35, 36]):
         monster = getRandomMonster(monsterArr)
         print("You get attacked by a " + monster.name + "!\n")
-        input(" ")
-        clear()
+        pause()
         battle(p, monster)
         print("You find a treasure chest and find that there are 20 coins inside!")
         p.coins += (20*level)
@@ -1029,17 +1165,14 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
         monster = getRandomMonster(monsterArr)
         monster2 = getRandomMonster(monsterArr)
         print("You get attacked by a " + monster.name + "!\n")
-        input(" ")
-        clear()
+        pause()
         battle(p, monster) 
         print("You get attacked again by the monsters friend, a " + monster2.name + "!\n")
-        input(" ")
-        clear()
+        pause()
         battle(p, monster2)
         print("You find a chest and see what is inside")
         loot_s(p, level)
-    input(" ")
-    clear()
+    pause()
 
 def guess_number():
     guess = ""
@@ -1070,8 +1203,7 @@ def guess_number():
     return False
 def loot_s(p, level):
     print("You find a small loot chest and decide to see what is inside it!\n")
-    input(" ")
-    clear()
+    pause()
     num = random_num(10)
     if(num in range(1,8)):
         coins = math.ceil(15 * level)
@@ -1083,18 +1215,16 @@ def loot_s(p, level):
         battle(p, mimic)
     else:
         print("Unfortunate, there is nothing, but cobwebs inside")
-    input(" ")
-    clear()
+    pause()
 
 def loot_m(p, level):
     print("You find a medium loot chest and decide to see what is inside it!\n")
-    input(" ")
-    clear()
+    pause()
     num = random_num(6)
     if(num in range(1,3)):
         coins = math.ceil(40 * level)
         p.coins += coins
-        print("You found " + str(coins) + " in the chest! You now have " + p.coins + "coins\n")
+        print("You found " + str(coins) + " in the chest! You now have " + str(p.coins) + " coins\n")
     elif(num == 3):
         print("Oh no! The chest was a decoy! The chest attacks you!")
         mimic = Enemy("level " + str(level) + " mimic", getStats(9*level, 30*level, 10*level, 35*level))
@@ -1108,31 +1238,27 @@ def loot_m(p, level):
         p.skillRaise()
     else:
         print("You find an interesting ancient scroll, you translate and read the scroll out loud...\n")
-        input(" ")
-        clear()
+        pause()
         print("Suddenly, you see an aura form around you.\n Not only did you regain all your missing health, but you now have a forcefield that allows you to withstand 50 hp of damage before getting hurt\n")
         p.stats.toFullHealth()
         p.stats.hp += 50
-    input(" ")
-    clear()
+    pause()
 
 def loot_l(p, level):
     print("You find a large loot chest and decide to see what is inside it!\n")
-    input(" ")
-    clear()
+    pause()
     num = random_num(20)
     if(num in range(1, 10)):
         coins = math.ceil(75 * level)
         p.coins += coins
-        print("You found " + str(coins) + " in the chest! You now have " + p.coins + "coins\n")
+        print("You found " + str(coins) + " in the chest! You now have " + str(p.coins) + " coins\n")
     elif(num ==  10):
         print("Oh no! The chest was a decoy! The chest attacks you!")
         mimic = Enemy("level " + str(level) + " mimic", getStats(12*level, 35*level, 15*level, 50*level))
         battle(p, mimic)
     elif(num in range(11,13)):
         print("You find an interesting ancient scroll, you translate and read the scroll out loud...\n")
-        input(" ")
-        clear()
+        pause()
         print("Suddenly, you see an aura form around you.\n Not only did you regain all your missing health, but you now have a forcefield that allows you to withstand 150 hp of damage before getting hurt\n")
         p.stats.toFullHealth()
         p.stats.hp += 150
@@ -1142,8 +1268,7 @@ def loot_l(p, level):
         p.skillRaise()
     elif(num in range(16,18)):
         print("You pick up a glowing red orb, you wonder what this orb does\n")
-        input(" ")
-        clear()
+        pause()
         print("Your " + p.weapon.name + " starts glowing! The orb is a weapon enchanter!")
         upgrade = random_num(2)
         if(upgrade == 1):
@@ -1156,8 +1281,7 @@ def loot_l(p, level):
             p.weapon.damage += points
     elif(num in range(18,20)):
         print("You pick up a glowing blue orb, you wonder what this orb does\n")
-        input(" ")
-        clear()
+        pause()
         print("Your " + p.armor.name + " starts glowing! The orb is an armor enchanter!")
         points = randomish_num(8)
         print("Your armor gains " + str(points) + " resistance points!\n")   
@@ -1171,13 +1295,11 @@ def loot_l(p, level):
         p.stats.buffStats(1.5)
         print("Current stats:\n")
         print_skills()
-    input(" ")
-    clear()
+    pause()
 
 def getZone(p, zone, zoneText, monsterArr, boss):
     print(zoneText[zone])
-    input(" ")
-    clear()
+    pause()
     response = ""
     while response not in choices:
         displayPaths(zone)
@@ -1192,7 +1314,7 @@ def getZone(p, zone, zoneText, monsterArr, boss):
             response = ""
         elif(response == "2"):
             preDungeon(zone)
-            dungeon(p, zone, randomish_num(12), monsterArr, 1, boss)
+            dungeon(p, zone, randomish_num(8), monsterArr, 1, boss)
         elif(response == "3"):
             response = chanceFate(p, monsterArr)
         elif(response == "4"):
@@ -1208,8 +1330,7 @@ def chanceFate(p, monsterArr):
     if(chance in [1,2,3,4,5,6]):
         monster = getRandomMonster(monsterArr)
         print("You get attacked by a " + monster.name + "!\n")
-        input(" ")
-        clear()
+        pause()
         battle(p, monster)
     elif(chance == 7 or chance == 8):
         if(p.coins < 5):
@@ -1228,12 +1349,10 @@ def chanceFate(p, monsterArr):
         monster = getRandomMonster(monsterArr)
         monster2 = getRandomMonster(monsterArr)
         print("You get attacked by a " + monster.name + "!\n")
-        input(" ")
-        clear()
+        pause()
         battle(p, monster) 
         print("You get attacked again by the monsters friend, a " + monster2.name + "!\n")
-        input(" ")
-        clear()
+        pause()
         battle(p, monster2)
         print("You find a treasure chest and find that there are 20 coins inside!")
         p.coins += 20
@@ -1264,8 +1383,7 @@ def navigateF(p):
                     print("The " + monster.name + " strikes you without hesitation")
                     print("You lose " + str(monster.stats.str) + " health!")
                     p.stats.hp -= monster.stats.str
-                    input(" ")
-                    clear()
+                    pause()
                     battle(p, monster)
                 else:
                     yesnoInputFail()
@@ -1273,7 +1391,7 @@ def navigateF(p):
         elif(response == "2"):
             getZone(p, "river", zoneText, riverCreatures, riverboss)
         elif(response == "3"):
-            response = chanceFate(p, forestCreatures)
+            getZone(p, "forest", zoneText, forestCreatures, forestlord)
         elif(response == "4"):
             response = chanceFate(p, forestCreatures)
         else:
@@ -1294,8 +1412,7 @@ def investFpath(p):
         if(response == 'y'):
             print("Drawing your " + p.weapon.name + " you are alert that there might be enemies nearby")
             print("Three small, but nimble goblins jump out of the bushes and surprise you!")
-            input(" ")
-            clear()
+            pause()
             goblins = []
             for i in range(3):
                 goblinStats = getStats(4, 350, 1, 30)
@@ -1309,8 +1426,7 @@ def investFpath(p):
         elif(response == 'n'):
             print("You don't seem to alarmed by the rustling and continue to examine the pathway")
             print("Noticing footprints and what looks to be chariot tracks, realize that people are close")
-            input(" ")
-            clear()
+            pause()
             print("Suddenly, four men in gladiator armor appear from the bushes and demand to know what you are doing\n")
             gladiator(p)
         else:
@@ -1334,50 +1450,45 @@ def gladiator(p):
     response = ""
     while response not in choices:
         gladiatorTalk(p)
-        response = input("The leader of the clan states: Who are you and what do you want!? (pick 1, 2, 3, or 4)").lower()
+        response = input("The leader of the clan states: Who are you and what do you want!? (pick 1, 2, 3, or 4)\n").lower()
         clear()
         if(response == "1"):
             print("WHY! We pray to the dragon gods every night! You must now die! \n")
-            input(" ")
-            clear()
+            pause()
             for i in range(4):
                 battle(p, gladiators[i])
-            input(" ")
-            clear()
+            pause()
             print("After defeating all the gladiators, you are confident that you can continue to inspect the path!")
-            input(" ")
-            clear()
+            pause()
         elif(response == "2"):
             print("Alright you aren't getting passed us!")
-            input(" ")
-            clear()
+            pause()
             for i in range(2):
                 battle(p, gladiators[i])
-            input(" ")
-            clear()
+            pause()
             print("Nevermind feel free to pass us, you mean no harm to us!\n")
             print("Finally, some peace and quiet you can continue to inspect the path!")
-            input(" ")
-            clear()
+            pause()
         elif(response == "3"):
             print("Oh you must be octavius on the quest to kill the minotaur!\n")
-            input(" ")
-            clear()
+            pause()
             print("You spend quite some time training with the gladiators and gain skill points!")
             p.stats.sp += 2
             p.skillRaise()
             print("You thank the gladiators and go on your way to continue inspecting the path")
         elif(response == "4"):
             print("Looks like this person doesn't speak lets make em' speak")
-            input(" ")
-            clear()
+            pause()
             battle(p, gladiators[0])
             print("They killed vlad! Noooooooooooooo!")
             print("RETREAT!")
-            input(" ")
-            clear()
+            pause()
         else:
             choiceInputFail()
+
+def pause():
+    input(" ")
+    clear()
 
 skyboss = easyMonsters("boss", "hydra")
 
@@ -1404,6 +1515,8 @@ seasnake = easyMonsters("normal", "sea snake")
 
 riverCreatures = [shark, squid, siren, octupus, alligator, seawitch, seamonster, seasnake]
 
+forestlord = easyMonsters("boss", "forest lord")
+
 spider = easyMonsters("fast", "arachnid")
 zombie = easyMonsters("slow", "zombie")
 ogre = mediumMonsters("slow", "ogre")
@@ -1417,7 +1530,7 @@ forestCreatures = [spider, zombie, ogre, goblin, mummy, werewolf, spirit, robot]
 
 clear()
 name = input("Hello! What is your name, soldier\n")
-playerStats = getStats(1000, 30, 20, 500)
+playerStats = getStats(15, 30, 25, 50)
 p = Player(name, playerStats)
 print("Hello, " + p.name + ". You are chosen to go on this quest to slay the fire dragon!\n")
 input("press enter to continue")
@@ -1425,17 +1538,15 @@ clear()
 print("Throughout all your training, you gained these skills:\n")
 print_skills()
 print("These skills are going to play a roll in whether you defeat the dragon or not\n")
-input(" ")
-clear()
+pause()
 # Begin Game!
-guess_number()
 print("You leave early morning, and come across to a nearby village for food and supplies\n")
 wolfStats = getStats(4, 15, 0, 20)
-wolf = Enemy("wolf", wolfStats, 6, 6)
+wolf = Enemy("wolf", wolfStats, 8, 8)
 store(wolf, 5)
-print("You ask one of the villagers and receive a map to the dragon's den.")
+print("You ask one of the villagers and receive piece of a map to the dragon's den.")
 print("Looking at the map you need to first travel through the forest of darkness")
-input(" ")
-clear()
+pause()
 forest(p)
+labyrinth(p)
 
