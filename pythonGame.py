@@ -34,12 +34,12 @@ class Weapon(Item):
         self.damage = damage
         self.speed = speed
     def print_weapon(self):
-        print("*******************************")
+        print("********************************")
         print("| Weapon stats:                |")
         print("|    Name     : " + stringBuilder(self.name, 15) + "|")
         print("|    Damage   : " + stringBuilder(self.damage, 15) + "|")
         print("|    Speed    : " + stringBuilder(self.speed, 15) + "|")
-        print("*******************************")
+        print("********************************")
 
 class Armor(Item):
     def __init__ (self, name, coins, resistance):
@@ -67,11 +67,14 @@ class Player:
         self.name = name
         self.stats = stats
         self.weapon = fist
-        self.coins = 0
+        self.coins = 4
         self.armor = cloth
         self.spell = spells[0]
         self.escape = False
         self.bossesDefeated = 0
+
+    def print_coins(self):
+        print("You currently have " + str(p.coins) + " coins!\n")
 
     def print_stats(self):
         print("***********************************")
@@ -133,6 +136,10 @@ class Player:
         else:
             hit += self.weapon.damage
             hit = math.ceil(hit)
+            critical = random_num(100)
+            if(self.stats.meleeCrit > critical):
+                print("CRITICAL STRIKE!\n")
+                hit *=1.5
             print("You dealt " + str(hit) + " damage to the " + enemy.name + "\n")
             enemy.stats.hp -= hit
             if(self.dexCheck()):
@@ -142,6 +149,10 @@ class Player:
         print("You chose to attack the enemy with your " + self.spell.name + "!\n")
         hit = math.ceil(self.spell.power * self.stats.int)
         self.stats.mana -= self.spell.mana
+        critical = random_num(100)
+        if(self.stats.magCrit > critical):
+            print("CRITICAL STRIKE!\n")
+            hit *=1.5
         print("You dealt " + str(hit) + " damage to the " + enemy.name + "\n")
         enemy.stats.hp -= hit
         if(self.dexCheck()):
@@ -256,11 +267,19 @@ class Enemy:
                 hit -= player.armor.resistance
             if(hit < 1):
                 hit = random_num(2)
-            print("The " + self.name + " dealt " + str(hit) + " damage to the " + player.name + "\n")
-            player.stats.hp -= hit
-            if(self.dexCheck()):
-                self.attack(player)
-
+            reflect = random_num(100)
+            if(player.stats.reflect > reflect):
+                hit = math.ceil(hit*.75)
+                print("You REFLECTED " + str(hit) + " damage back to the " + self.name + "!\n")
+            else:
+                print("The " + self.name + " dealt " + str(hit) + " damage to the " + player.name + "\n")
+                player.stats.hp -= hit
+                if(self.dexCheck()):
+                    self.attack(player)
+                if(player.stats.hp <= 0):
+                    restore = random_num(100)
+                    if(player.stats.restore > restore):
+                        player.stats.addHealth(math.ceil(player.stats.totalHP * .25))
 class Stats:
     def __init__(self, strength, dexterity, intelligence, health):
         self.str = strength
@@ -275,6 +294,10 @@ class Stats:
         self.xpToLevelUp = 20
         self.level = 1
         self.sp = 0
+        self.magCrit = 0
+        self.meleeCrit = 0
+        self.reflect = 0
+        self.restore = 0
     
     def print_all_stats(self):
         print("***********************************")
@@ -445,6 +468,7 @@ def print_store():
     print("3. " + stringBuilder(food[0].name, 17) + "| " + stringBuilder(food[0].cost, 4) + " coins")
     print("4. " +  stringBuilder(armor[0].name, 17) + "| " + stringBuilder(armor[0].cost, 4) + " coins")
     print("5. Press 5 to view your stats!")
+    print("L. Press L to leave this store!")
     print("********************************\n")
 
 # Allows user to buy an item
@@ -462,6 +486,7 @@ def store_buy(item, itemArray):
                 print("We will put this item back on the shelf!\n")
             else:
                 yesnoInputFail()
+            pause()
     else:
         print("Sorry you don't have enough coins to buy this item!\n")
 
@@ -478,9 +503,10 @@ def store(enemy, coinMin):
             elif(p.coins < min(potions[0].cost ,weapons[0].cost, food[0].cost, armor[0].cost)):
                 print("Sorry you don't have enough coins to shop here!\n")
             else:
-                while response not in choices:
+                while response != "l":
+                    p.print_coins()
                     print_store()
-                    response = input("What would you like to purchase? (Type <1, 2, 3, 4, or 5> based on the corresponding items)\n")
+                    response = input("What would you like to purchase? (Type <1, 2, 3, 4, or 5> based on the corresponding items) Type L to leave!\n").lower()
                     clear()
                     if(response == "1"):
                         store_buy(potions[0], potions)
@@ -492,8 +518,11 @@ def store(enemy, coinMin):
                         store_buy(armor[0], armor)
                     elif(response == "5"):
                         p.print_stats()
+                    elif("l"):
+                        print("Thanks for stopping by the shop!\n")
                     else:
-                        print("Please respond with 1, 2, 3, or 4 to purchase something, you're wasting electricty!\n")
+                        print("Please respond with 1, 2, 3, or 4 to purchase something, or L to leave, you're wasting electricty!\n")
+                response = "n"
         elif(response.lower() == "n"):
             response = ""
             if(p.coins <= coinMin):
@@ -638,6 +667,7 @@ def forest(p):
         if(p.bossesDefeated >= 2):
             while response not in yes_no:
                 response = input("would you like to continue your quest (Y) or go back to the forest (N) (Y/N) \n warning you must complete another boss to come back to this message \n").lower()
+                clear()
                 if(response == 'y'):
                     pass
                 elif(response == 'n'):
@@ -650,13 +680,12 @@ def forest(p):
         if(not continueQuest):
             response = ""
 
-
-
         elif(response in yes_no):
             print("You got so confused navigating the land that you came back to the same first path!")
             print("Defeat two bosses to find the next piece of the map!\n")
 
 def labyrinth(p):
+    bossesBeat = p.bossesDefeated + 1
     print("You come out of the forest more confident than ever knowing that you defeated very powerful bosses\n")
     print("However, you know that there will be tougher challenges in the future!\n")
     pause()
@@ -666,6 +695,206 @@ def labyrinth(p):
     print("After a couple of nights in the village, healing wounds and scars from monsters, you feel well rested to continue!\n")
     print("You regain all your hunger, health, and mana throughout these nights.\n")
     p.print_stats()
+    print("You go to the local shopping district and see that there are a few shops that interest you\n")
+    shoppingDistrict(p)
+    response = ""
+    while response != "l" and bossesBeat <= p.bossesDefeated:
+        labyrinthPaths()
+        response = input("Where would you like to go? (1, 2, 3, or 4)\n").lower()
+        clear()
+        if(response == "1"):
+            shoppingDistrict(p)
+        elif(response == "2"):
+            getZone(p, "abandoned cave", zoneText, caveMonsters, queenSpider)
+        elif(response == "3"):
+            getZone(p, "atlantis", zoneText, oceanMonsters, poseidon)
+        elif(response == "4"):
+            getZone(p, "xeon8", zoneText, alienMonsters, alienWarlord)
+        elif(response == "l"):
+            print("You decide to leave the area after all that action!\n")
+            if(bossesBeat > p.bossesDefeated):
+                print("You still need to defeat a boss!\n")
+        else:
+            choiceInputFail()
+def labyrinthPaths():
+    print("********************************************************")
+    print("     Location:                                          ")
+    print(" 1.) Return to Siawathi Shopping District               ")
+    print(" 2.) Explore the abandoned miner's cave                 ")
+    print(" 3.) Loot a shipwreck                                   ")
+    print(" 4.) Frolic in the dandelion fields                     ")
+    print(" L.) Type L to leave if you defeated at least one boss  ")
+    print("********************************************************n")
+def shoppingDistrict(p):
+    response = ""
+    secret = True
+    while response not in choices:
+        shops()
+        response = input("Where would you like to go? (1, 2, 3, or 4)\n").lower()
+        clear()
+        if(response == "1"):
+            store(werewolf, 5)
+            response = ""
+        elif(response == "2"):
+            blacksmith(p)
+            response = ""
+        elif(response == "3"):
+            bar(p)
+            response = ""
+        elif(response == "4"):
+            print("Thanks for shopping at the siawathi shopping district! Come again soon!\n")
+
+        elif(response == "yeet" and secret == True):
+            print("You see a shady man with a cloak over his head tap a stone brick of one of the buildings\n")
+            print("You don't see the man anymore\n")
+            pause()
+            print("You go over to where the stone was and tap the same stone and a purple portal sucks you into a new dimension\n")
+            pause()
+            print(p.name + " it's about time you showed up. We are the miquiderans, the secret underground organization that defends villages from evil presences\n")
+            print("After viewing your progress throughout the first few dungeons, we see that you have a lot of potential to be great\n")
+            pause()
+            print("We are granting you one of these items that will help you on your quest\n")
+            pause()
+            resistanceSociety(p)
+            print("You leave the area and are super excited about your new item!\n")
+            secret = False
+        elif(response == "yeet" and secret == False):
+            print("You return to the stone building and attempt to tap the stone which lead you to the portal, but the portal does not seem to generate anymore!\n")
+        else:
+            choiceInputFail()
+        pause()
+
+def resistanceSociety(p):
+    response = ""
+    while response not in choices:
+        printResistance()
+        response = input("Which item would you like to have? (1, 2, 3, or 4) \n").lower()
+        clear()
+        if(response == "1"):
+            print("You equipped the Winged Sceptor and now have its power")
+            p.stats.magCrit += 15
+        elif(response == "2"):
+            print("You equipped the Elemental Shield and now have its power")
+            p.stats.reflect += 5
+        elif(response == "3"):
+            print("You equipped the Ring of Restoration and now have its power")
+            p.stats.restore += 25
+        elif(response == "4"):
+            print("You equipped the Amulet of Ares and now have its power")
+            p.stats.meleeCrit += 20
+        else:
+            choiceInputFail()
+
+def printResistance():
+    print("****************************************************************************")
+    print("     Item:               Description:                                       ")
+    print(" 1.) Winged Sceptor       A powerful magical item that grants a 15 percent  ")
+    print("                          critcal chance to enemies on magic attacks        ")
+    print(" 2.) Elemental Shield     A shield that has a 5 percent chance of reflecting")
+    print("                          a portion of the enemies damage                   ")
+    print(" 3.) Ring of Restoration  A ring that provides a 25 percent chance that on  ")
+    print("                          death in battle you will resurrect                ")
+    print(" 4.) Amulet of Ares       A war amulet that has a 20 percent chance that to ")
+    print("                          critical on melee strikes                         ")
+    print("****************************************************************************\n")    
+def bar(p):
+    response = ""
+    drinks = 0
+    while response != "l":
+        printBar()
+        response = input("What can I do for you?\n").lower()
+        clear()
+        if(response == "1"):
+            if(canBuy(p, 12)):
+                print("You ate some crappy bar food +5 hunger!\n")
+                p.stats.addHunger(5)
+                pause()
+        elif(response == "2"):
+            if(canBuy(p, 4)):
+                if(drinks < 2):
+                    print("You take a drink and feel fine")
+                elif(drinks < 5):
+                    print("You start to feel a little dizzy\n")
+                elif(drinks < 15):
+                    print("You see the room spinning and grab a table, you probably shouldn't drink anymore")
+                else:
+                    print("You lose! Should've known when to stop drinking! THE END! \n")
+                    sys.exit(":(")
+                drinks += 1
+        elif(response == "3"):
+            print("A man with an eyepatch spits on you, and says: you came to the wrong bar\n")
+            print("You and the man go into battle!\n")
+            battle(p, mediumMonsters("normal", "angry man", 40, 40))
+            print("The man skimps away from you and sits back at his table\n")
+        elif(response == "l"):
+            print("Thanks for stopping at my blacksmith! Come again soon!\n")
+            pause()
+        else:
+            print("Please select 1, 2, 3, 4, or L to leave!\n")  
+
+def printBar():
+    print("********************************************")
+    print("            Item:               Coins:      ")
+    print(" 1.)      Bar Food               12         ")
+    print(" 2.)      Alcohol                4          ")
+    print(" 3.)      Bar Fight              -          ")
+    print(" L.)  Type: L to leave                       ")
+    print("********************************************\n")    
+
+def blacksmith(p):
+    response = ""
+    while response != "l":
+        printBlacksmith()
+        response = input("What can I do for you?\n").lower()
+        clear()
+        if(response == "1"):
+            if(canBuy(p, 40)):
+                print("Your " + p.armor.name + "'s resistance increased by 2!\n")
+                pause()
+                p.armor.resistance += 2
+        elif(response == "2"):
+            if(canBuy(p, 35)):
+                print("Your " + p.weapon.name + "'s speed increased by 5!\n")
+                pause()
+                p.weapon.speed += 5
+                pause()
+        elif(response == "3"):
+            if(canBuy(p, 45)):      
+                print("Your " + p.weapon.name + "'s damage increased by 3!\n")
+                pause()
+                p.weapon.damage += 3
+        elif(response == "4"):
+            p.weapon.print_weapon()
+            p.armor.print_armor()
+        elif(response == "l"):
+            print("Thanks for stopping at my blacksmith! Come again soon!\n")
+            pause()
+        else:
+            print("Please select 1, 2, 3, 4, or L to leave!\n")  
+
+def printBlacksmith():
+    print("**************************************************")
+    print("            Service:                 Coins:       ")
+    print(" 1.) Improve Armor Resistance          40         ")
+    print(" 2.) Enhance Weapon Speed              35         ")
+    print(" 3.) Upgrade Weapon Damage             45         ")
+    print(" 4.) To see item statistics                       ")
+    print("     Type: L to leave                             ")
+    print("**************************************************\n")
+
+def canBuy(p, cost):
+    if(p.coins >= cost):
+        return True
+    print("You can't afford to buy this!\n")
+    return False
+
+def shops():
+    print("***************************************************************")
+    print(" 1.) General Store  :  Purchase new gear for upcoming battles! ")
+    print(" 2.) Blacksmith     :  Upgrade weapons and armor here!         ")
+    print(" 3.) Siawatha Bar   :  Drink away your problems here!          ")
+    print(" 4.) Leave District :  Return to your journey!                 ")
+    print("***************************************************************\n")
 
 def easyMonsters(version, name, coins = 25, xp = 25):
     stats = ""
@@ -684,11 +913,11 @@ def easyMonsters(version, name, coins = 25, xp = 25):
 def mediumMonsters(version, name, coins = 75, xp = 75):
     stats = ""
     if(version == "fast"):
-        stats = getStats(12, 333, 20, 35)
+        stats = getStats(8, 333, 20, 35)
     elif(version == "normal"):
-        stats = getStats(14,40,40,70)
+        stats = getStats(14,40,40,50)
     elif(version == "slow"):
-        stats = getStats(20, 10, 10, 130)
+        stats = getStats(20, 10, 10, 75)
     elif(version == "boss"):
         stats = getStats(24, 40, 40, 250)
         coins *= 4
@@ -698,19 +927,19 @@ def mediumMonsters(version, name, coins = 75, xp = 75):
 def hardMonsters(version, name, coins = 150, xp = 150):
     stats = ""
     if(version == "fast"):
-        stats = getStats(15, 500, 20, 70)
+        stats = getStats(12, 500, 20, 75)
     elif(version == "normal"):
-        stats = getStats(30, 100, 100, 150)
+        stats = getStats(25, 100, 100, 125)
     elif(version == "slow"):
-        stats = getStats(50, 20, 20, 325)
+        stats = getStats(40, 20, 20, 300)
     elif(version == "boss"):
-        stats = getStats(75, 100, 100, 500)
+        stats = getStats(50, 150, 100, 500)
         coins*= 4
         coin *= 4
     return Enemy(name, stats, coins, xp)
 
 def dragon(name):
-    stats = getStats(125, 666, 555, 1500)
+    stats = getStats(45, 666, 555, 1500)
     return Enemy(name, stats, 1200, 1000)
 
 def getRandomMonster(arr):
@@ -726,7 +955,10 @@ def displayPaths(zone):
 zoneText = {
     "sky" : "You reach the top of the tree and find that you can magically walk on the clouds\n These clouds have a bit of a bounce to it as you hop forward\nThrough the mist, you can see a cloud shop and what looks to be a dungeon in the distance!\n",
     "river" : "You reach the a giant flowing river and can are debating whether you should cross it\nYou keep walking toward it step by step\nYou realize that this river has some monsters nearby!\n",
-    "forest" : "It is incredibly difficult to see the forest as you try to navigate in utter darkness\n You see a small glimpse of light in the distance\n"
+    "forest" : "It is incredibly difficult to see the forest as you try to navigate in utter darkness\n You see a small glimpse of light in the distance\n",
+    "abandoned cave": "You walk along a trail and see a large cave opening with a empty barrels and deserted mining supplies scatter throughout.\n You wonder why the cave is not too popular at this time of day\n A mining dwarf in the distance screams at you for your own saftey you need to turn around!\n You explain to him your journey and he lets you know that many people have tried to stablize the caves, but there is a deep evil that resonates within the depths\n He wishes you luck as you enter the cave...\n",
+    "atlantis": "A local aquatics shop lends you scuba gear to examine the shipwreck\n They explain as long as you pay them after you return\n You dive into the ocean and start swimming to the bottom\n You hear a giant booming voice: WHAT ARE YOU DOING IN MY SEAS, it is Poseidon the god of the sea, but you notice that in his eyes he is being brainwashed by the spirit of the evil dragon\n You see Poseidon raise his arm and slam his trident down on the ocean floor! Waves push you back and slam you into a wall. You blackout and you wake up in the undersea town, Atlantis\n You are told by water spirits that you were saved by one of them...",
+    "xeon8": "You smile as you are about to take a break from fighting and start leaping through the flowers in a large empty field!\n You are having the time of your life as you leap as far as you can\n You hear a cow MOoooooooOOOOoooooo and look over to see by your surprise, the cow is being abducted by aliens!\n You quickly run away and you start floating aswell to the intergalatic planet of Xeon8\n",
 }
 
 def preDungeon(zone):
@@ -807,6 +1039,9 @@ def talkCentaur(p):
             print("Go at once, and take this necklace it will provide you with magic powers")
             print("You put on the necklace and receive +7 intelligence")
             p.stats.int += 7
+            print("You now have " + p.stats.int + " Intelligence!")
+            pause()
+            print("One last thing traveler, if you get to the village of siawathi and go to the shopping district type: YEET\n")
         elif(response == "n"):
             print("You avoid the centaur not sure if they are evil or not\n")
             print("You hear rustling in the bushes and you get knocked out cold\n")
@@ -1160,7 +1395,7 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
         pause()
         battle(p, monster)
         print("You find a treasure chest and find that there are 20 coins inside!")
-        p.coins += (20*level)
+        p.coins += (math.ceil(20*level))
     else:
         monster = getRandomMonster(monsterArr)
         monster2 = getRandomMonster(monsterArr)
@@ -1171,7 +1406,13 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
         pause()
         battle(p, monster2)
         print("You find a chest and see what is inside")
-        loot_s(p, level)
+        num = random_num(100)
+        if(num > 93):
+            loot_l(p, level)
+        elif(num > 60):
+            loot_m(p, level)
+        else:
+            loot_s(p,level)
     pause()
 
 def guess_number():
@@ -1227,7 +1468,7 @@ def loot_m(p, level):
         print("You found " + str(coins) + " in the chest! You now have " + str(p.coins) + " coins\n")
     elif(num == 3):
         print("Oh no! The chest was a decoy! The chest attacks you!")
-        mimic = Enemy("level " + str(level) + " mimic", getStats(9*level, 30*level, 10*level, 35*level))
+        mimic = Enemy("level " + str(level) + " mimic", getStats(14*level, 50*level, 20*level, 70*level), 50, 50)
         battle(p, mimic)
     elif(num == 4):
         print("You see a clear pink potion and decide to drink it. The potion restored all your hunger, health, and mana!\n")
@@ -1254,7 +1495,7 @@ def loot_l(p, level):
         print("You found " + str(coins) + " in the chest! You now have " + str(p.coins) + " coins\n")
     elif(num ==  10):
         print("Oh no! The chest was a decoy! The chest attacks you!")
-        mimic = Enemy("level " + str(level) + " mimic", getStats(12*level, 35*level, 15*level, 50*level))
+        mimic = Enemy("mimic", getStats(20*level, 100*level, 35*level, 50*level), 50, 50)
         battle(p, mimic)
     elif(num in range(11,13)):
         print("You find an interesting ancient scroll, you translate and read the scroll out loud...\n")
@@ -1272,18 +1513,18 @@ def loot_l(p, level):
         print("Your " + p.weapon.name + " starts glowing! The orb is a weapon enchanter!")
         upgrade = random_num(2)
         if(upgrade == 1):
-            points = randomish_num(12)
+            points = randomish_num(5)
             print("Your weapon gains " + str(points) + " speed points!\n")   
             p.weapon.speed += points
         else:
-            points = randomish_num(8)
+            points = randomish_num(7)
             print("Your weapon gains " + str(points) + " damage points!\n")   
             p.weapon.damage += points
     elif(num in range(18,20)):
         print("You pick up a glowing blue orb, you wonder what this orb does\n")
         pause()
         print("Your " + p.armor.name + " starts glowing! The orb is an armor enchanter!")
-        points = randomish_num(8)
+        points = randomish_num(6)
         print("Your armor gains " + str(points) + " resistance points!\n")   
         p.armor.resistance += points
         p.stats.totalHP += points
@@ -1333,18 +1574,23 @@ def chanceFate(p, monsterArr):
         pause()
         battle(p, monster)
     elif(chance == 7 or chance == 8):
-        if(p.coins < 5):
-            print("Nothing seems too interesting over here!")
-        else:
-            print("As you walked, a thief quickly took gold from you!")
-            if(p.coins < 25):
-                p.coins-=5
-            elif(p.coins < 75):
-                p.coins-=20
-            elif(p.coins < 250):
-                p.coins -= 50
+        randomNum = random_num(25)
+        if(randomNum < 20):
+            if(p.coins < 5):
+                print("Nothing seems too interesting over here!")
             else:
-                p.coins -= 100
+                print("As you walked, a thief quickly took gold from you!")
+                if(p.coins < 25):
+                    p.coins-= 3
+                elif(p.coins < 75):
+                    p.coins-= 10
+                elif(p.coins < 250):
+                    p.coins -= 25
+                else:
+                    p.coins -= 100
+        else:
+            print("You found a bag of money with " + str(randomNum) + " coins!\n")
+            p.coins += randomNum
     elif(chance in [11,12,13,14,15]):
         monster = getRandomMonster(monsterArr)
         monster2 = getRandomMonster(monsterArr)
@@ -1490,6 +1736,53 @@ def pause():
     input(" ")
     clear()
 
+alienWarlord = mediumMonsters("boss", "alien warlord")
+
+drone = easyMonsters("normal", "alien drone")
+predator = easyMonsters("boss", "alien predator")
+gunship = easyMonsters("boss", "alien gunship")
+alienknight = hardMonsters("normal", "alien knight")
+galactus  = mediumMonsters("boss", "galactus")
+galacticZombie = mediumMonsters("fast", "galactic zombie")
+deathstar = mediumMonsters("boss", "mini deathstar")
+stardestroyer = hardMonsters("slow", "star destroyer")
+sunDevil = mediumMonsters("slow", "sun devil")
+planetEater = mediumMonsters("slow", "planet eater")
+bounty = mediumMonsters("normal", "bounty hunter")
+
+alienMonsters = [drone, predator, gunship, alienknight, galactus, galacticZombie, deathstar, stardestroyer, sunDevil, planetEater, bounty]
+
+poseidon = mediumMonsters("boss", "poseidon")
+
+seaSerpent = hardMonsters("normal", "sea serpent")
+megalodon = easyMonsters("boss", "megalodon")
+oceanus = easyMonsters("boss", "oceanus")
+kraken = hardMonsters("normal", "kraken")
+jaguarShark = mediumMonsters("boss", "jaguar shark")
+seaViper = mediumMonsters("fast", "sea viper")
+leviathan = mediumMonsters("boss", "leviathan")
+pufferfish = mediumMonsters("slow", "pufferfish")
+orca = mediumMonsters("slow", "orca whale")
+seaGuard = mediumMonsters("fast", "sea guard")
+seaKnight = mediumMonsters("normal", "sea knight")
+
+oceanMonsters = [seaSerpent,megalodon,oceanus,kraken,jaguarShark,seaViper,leviathan,pufferfish,orca,seaGuard,seaKnight]
+
+queenSpider = mediumMonsters("boss", "queen spider")
+
+caveSpider = mediumMonsters("fast", "spider")
+caveSkeleton = mediumMonsters("fast", "skeleton")
+caveWarlock = mediumMonsters("slow", "warlock")
+caveGoblin = mediumMonsters("fast", "goblin")
+caveGhost = hardMonsters("fast", "ghost")
+caveCyclops = easyMonsters("boss", "cyclops")
+caveMinotaur = easyMonsters("boss", "minotaur")
+caveGremlin = mediumMonsters("normal", "gremlin")
+caveOrc = hardMonsters("normal", "orc")
+caveCobra = mediumMonsters("normal", "king cobra")
+
+caveMonsters = [caveSpider, caveSkeleton, caveWarlock, caveGoblin, caveGhost, caveCyclops, caveMinotaur, caveGremlin, caveOrc, caveCobra]
+
 skyboss = easyMonsters("boss", "hydra")
 
 hawk = easyMonsters("fast", "hawk")
@@ -1549,4 +1842,3 @@ print("Looking at the map you need to first travel through the forest of darknes
 pause()
 forest(p)
 labyrinth(p)
-
