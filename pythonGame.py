@@ -71,7 +71,7 @@ class Player:
         self.armor = cloth
         self.spell = spells[0]
         self.escape = False
-        self.bossesDefeated = 3
+        self.bossesDefeated = 0
 
     def print_coins(self):
         print("You currently have " + str(p.coins) + " coins!\n")
@@ -218,22 +218,26 @@ class Player:
     
     def skillup(self, response):
         if(response == "1"):
+            num = random_num(2)
             self.stats.sp -= 1
-            self.stats.str += 1
-            print("You went to a weight room and leveled up your strength, you now have " + str(self.stats.str) + " strength! \n")
+            self.stats.str += num
+            print("You went to a weight room and leveled up your strength by " + str(num) + ", you now have " + str(self.stats.str) + " strength! \n")
         elif(response == "2"):
+            num = random_num(5)
             self.stats.sp -= 1
-            self.stats.dex += 1
-            print("You leveled up your dexterity, you now have " + str(self.stats.dex) + " dexterity \n")
+            self.stats.dex += num
+            print("You leveled up your dexterity by " + str(num) + ", you now have " + str(self.stats.dex) + " dexterity \n")
         elif(response == "3"):
+            num = random_num(2)
             self.stats.sp -= 1
-            self.stats.int += 1
-            print("You studied in your spare time and gained intelligence, you now have " + str(self.stats.int) + " intelligence \n")
+            self.stats.int += num
+            print("You studied in your spare time and gained " + str(num) + " intelligence! You now have " + str(self.stats.int) + " intelligence \n")
         elif(response == "4"):
+            num = random_num(4)
             self.stats.sp -= 1
-            self.stats.totalHP += 2
-            self.stats.hp += 2
-            print("You leveled up your health, you now have " + str(self.stats.totalHP) + " health \n")
+            self.stats.totalHP += num
+            self.stats.hp += num
+            print("You leveled up your health and gained " + str(num) + " permanent health! You now have " + str(self.stats.totalHP) + " health \n")
         if(self.stats.sp == 0):
             return response
         else:
@@ -631,9 +635,11 @@ def fight(player, enemy, turn):
                 response = ""
             elif(response == "3"):
                 player.rest()
-            elif(response == "4"):
+            elif(response == "4" and enemy not in bosses):
                 if(player.retreat()):
                     player.escape = True
+            elif(response == "4" and enemy in bosses):
+                print("You cannot escape the wrath of the " + enemy.name + "!!!!\n")
             elif(response == "5"):
                 player.print_stats()
             else:
@@ -726,7 +732,7 @@ def labyrinth(p):
 def labyrinthPaths():
     print("********************************************************")
     print("     Location:                                          ")
-    print(" 1.) Return to Siawathi Shopping District               ")
+    print(" 1.) Return to the Shopping District                    ")
     print(" 2.) Explore the abandoned miner's cave                 ")
     print(" 3.) Loot a shipwreck                                   ")
     print(" 4.) Frolic in the dandelion fields                     ")
@@ -912,9 +918,75 @@ def shops():
     print("***************************************************************")
     print(" 1.) General Store  :  Purchase new gear for upcoming battles! ")
     print(" 2.) Blacksmith     :  Upgrade weapons and armor here!         ")
-    print(" 3.) Siawatha Bar   :  Drink away your problems here!          ")
+    print(" 3.) Bar            :  Drink away your problems here!          ")
     print(" 4.) Leave District :  Return to your journey!                 ")
     print("***************************************************************\n")
+
+def dragonsden(p):
+    bossesBeat = p.bossesDefeated + 2
+    print("The road is tough, you somehow came out of those dungeons alive. You look forward and see a giant mountainous region... the dragon den is towering above you\n")
+    pause()
+    print("Deep within this mountain lives the legendary fire dragon\n")
+    print("You turn back and can no longer see the Siawathi village. The journey lies ahead as you trek towards the mountain\n")
+    pause()
+    print("Hidden in a valley, you see faded lanterns and dark rotting buildings\n")
+    print("You decide to stay the night in an abandoned building and sleep until morning\n")
+    pause()
+    print("The town open and it is not the same as Siawathi, but nonetheless contains similar shops...\n")
+    print("You reach the shopping district, and a man with three eyes taps you on your shoulder and tells you to come with him\n")
+    pause()
+    print("You hesistate and the man whispers look if you want to kill the dragon you have to capture at least two of the three elemental stones\n")
+    pause()
+    print("Who... who are you?\n")
+    pause()
+    print("I'm orken the messenger, I traveled long and far to meet you at this very location, they are hidden in three places near the dragon's den\n")
+    print("You must quickly gear up, and search for the stones!\n")
+    print("He hands you a map with all three of the locations on them\n")
+    pause()
+    shoppingDistrict(p)
+    print("You exit the shopping district and continue on your adventure and continue on your way\n")
+    response = ""
+    while (response != "l") or (bossesBeat > p.bossesDefeated):
+        dragonsdenPaths()
+        response = input("Where would you like to go? (1, 2, 3, or 4)\n").lower()
+        clear()
+        if(response == "1"):
+            shoppingDistrict(p)
+        elif(response == "2"):
+            getZone(p, "dark volcano", zoneText, lavamonsters, demonlord, 1.4)
+            print("After taking the volcanic elemental stone, the volcano rumbles loudly, the earth shakes as you quickly sprint down the side of it.")
+            print("Lava shoots out from the top of the volcano, and you sprint for your life, with your adrenaline pumping you take summon spell that shields you from the falling lava\n")
+            pause()
+            print("Luckily, you made it out alive...\n")
+        elif(response == "3"):
+            getZone(p, "ice cavern", zoneText, icemonsters, icetitan, 1.4)
+            print("You take the ice stone from the titan and you see ice shards fall from the ceiling, you immediately run back to safety.")
+            pause()
+            print("You duck and weave through the ice to find your way outside of the ice cavern alive!\n")
+        elif(response == "4"):
+            getZone(p, "earth shrine", zoneText, earthmonsters, tarturus, 1.4)
+            print("You take the earth stone, and sprint back to the surface. The earth rumbles as the floor diverges beneath you...")
+            pause()
+            print("You begin to fall to your impending doom when you take your " + p.weapon.name + " and shove it into the soft earth\n")
+            print("Hanging on for dear life by your " + p.weapon.name + " you cast a spell that creates ladders from your weapon to the surface")
+            pause()
+            print("You climb all the way back up and have secured the earth stone\n")
+        elif(response == "l" and bossesBeat <= p.bossesDefeated):
+            print("You decide to leave the area after all that action!\n")
+        elif(response == "l" and bossesBeat > p.bossesDefeated):
+            print("You still need to get two elemental stones!\n")
+        else:
+            choiceInputFail()
+        pause()
+def dragonsdenPaths():
+    print("**********************************************************")
+    print("            Location:                                     ")
+    print(" 1.) Return back to the store                             ")
+    print(" 2.) Dark Volcano                                         ")
+    print(" 3.) Ice Cavern                                           ")
+    print(" 4.) Earth Shrine                                         ")
+    print(" Type L to leave if you have at least two elemental stones")
+    print("**********************************************************\n")   
 
 def easyMonsters(version, name, coins = 25, xp = 25):
     stats = ""
@@ -955,12 +1027,11 @@ def hardMonsters(version, name, coins = 150, xp = 150):
     elif(version == "boss"):
         stats = getStats(50, 150, 100, 500)
         coins*= 4
-        coin *= 4
+        xp *= 4
     return Enemy(name, stats, coins, xp)
 
-def dragon(name):
-    stats = getStats(45, 666, 555, 1500)
-    return Enemy(name, stats, 1200, 1000)
+
+fireDragon = Enemy("Fire Dragon", getStats(50, 666, 555, 1500), 1200, 1200)
 
 def getRandomMonster(arr):
     num = random_num(len(arr)-1)
@@ -979,6 +1050,9 @@ zoneText = {
     "abandoned cave": "You walk along a trail and see a large cave opening with a empty barrels and deserted mining supplies scatter throughout.\n You wonder why the cave is not too popular at this time of day\n A mining dwarf in the distance screams at you for your own saftey you need to turn around!\n You explain to him your journey and he lets you know that many people have tried to stablize the caves, but there is a deep evil that resonates within the depths\n He wishes you luck as you enter the cave...\n",
     "atlantis": "A local aquatics shop lends you scuba gear to examine the shipwreck\n They explain as long as you pay them after you return\n You dive into the ocean and start swimming to the bottom\n You hear a giant booming voice: WHAT ARE YOU DOING IN MY SEAS, it is Poseidon the god of the sea, but you notice that in his eyes he is being brainwashed by the spirit of the evil dragon\n You see Poseidon raise his arm and slam his trident down on the ocean floor! Waves push you back and slam you into a wall. You blackout and you wake up in the undersea town, Atlantis\n You are told by water spirits that you were saved by one of them...",
     "xeon8": "You smile as you are about to take a break from fighting and start leaping through the flowers in a large empty field!\n You are having the time of your life as you leap as far as you can\n You hear a cow MOoooooooOOOOoooooo and look over to see by your surprise, the cow is being abducted by aliens!\n You quickly run away and you start floating aswell to the intergalatic planet of Xeon8\n",
+    "dark volcano": "You see a towering volcano in the distance\n You start climbing it up taking loads of strength and endurance, sweat beats down your cheek\n As you climb up the volcano, you see an opening with two lava columns and enter in the dungeon...\n",
+    "ice cavern": "You see a large ice cavern with towering icicles, one falls right before you and you nervously enter the dark freezing cave...",
+    "earth shrine": "The earth rumbles as you walk to the earth shrine. You enter hoping that the surface won't break below you...\n"
 }
 
 def preDungeon(zone):
@@ -1465,14 +1539,37 @@ def guess_number():
 def loot_s(p, level):
     print("You find a small loot chest and decide to see what is inside it!\n")
     pause()
-    num = random_num(10)
-    if(num in range(1,8)):
+    num = random_num(30)
+    if(num in range(1,15)):
         coins = math.ceil(15 * level)
         p.coins += coins
         print("You found " + str(coins) + " in the chest! You now have " + str(p.coins) + " coins\n")
-    elif(num == 9):
+    elif(num in range(16,28)):
+        stats_arr = ["strength", "intelligence", "health", "dexterity"]
+        number = random_num(7) - 1
+        if(number in range(0,4)):
+            print("You received a potion of " + stats_arr[number] + "! You drink it and get +1 " + stats_arr[number] + "! \n")
+            if(stats_arr == "strength"):
+                p.stats.str += 1   
+            elif(stats_arr == "intelligence"):
+                p.stats.int += 1    
+            elif(stats_arr == "health"):
+                p.stats.totalHP += 1  
+                p.stats.hp += 1
+            elif(stats_arr == "dexterity"):
+                p.stats.dex += 1
+        elif(number == 4):
+            print("You received an armor upgrade! You gain +1 resistance to your "+ p.armor.name + "!\n")
+            p.armor.resistance += 1
+        elif(number == 5):
+            print("You received an weapon upgrade! You gain +1 damage to your "+ p.weapon.name + "!\n")
+            p.weapon.damage += 1
+        elif(number == 6):
+            print("You received an armor upgrade! You gain +2 speed to your "+ p.weapon.name + "!\n")
+            p.weapon.speed += 1
+    elif(num == 15):
         print("Oh no! The chest was a decoy! The chest attacks you!")
-        mimic = Enemy("level " + str(level) + " mimic", getStats(6*level, 25*level, 5*level, 20*level), 10, 10)
+        mimic = Enemy(str(level) + " mimic", getStats(6*level, 25*level, 5*level, 20*level), 10, 10)
         battle(p, mimic)
     else:
         print("Unfortunate, there is nothing, but cobwebs inside")
@@ -1481,21 +1578,21 @@ def loot_s(p, level):
 def loot_m(p, level):
     print("You find a medium loot chest and decide to see what is inside it!\n")
     pause()
-    num = random_num(6)
-    if(num in range(1,3)):
+    num = random_num(20)
+    if(num in range(1,9)):
         coins = math.ceil(40 * level)
         p.coins += coins
         print("You found " + str(coins) + " in the chest! You now have " + str(p.coins) + " coins\n")
-    elif(num == 3):
+    elif(num == 9):
         print("Oh no! The chest was a decoy! The chest attacks you!")
         mimic = Enemy("level " + str(level) + " mimic", getStats(14*level, 50*level, 20*level, 70*level), 50, 50)
         battle(p, mimic)
-    elif(num == 4):
+    elif(num in range(10,15)):
         print("You see a clear pink potion and decide to drink it. The potion restored all your hunger, health, and mana!\n")
         p.stats.toFullSaturation()
-    elif(num == 5):
-        print("You see a clear purple potion and decide to drink it. The potion grants you 2 skill points!\n")
-        p.stats.sp += 2
+    elif(num in range(15,18)):
+        print("You see a clear purple potion and decide to drink it. The potion grants you 4 skill points!\n")
+        p.stats.sp += 4
         p.skillRaise()
     else:
         print("You find an interesting ancient scroll, you translate and read the scroll out loud...\n")
@@ -1524,8 +1621,8 @@ def loot_l(p, level):
         p.stats.toFullHealth()
         p.stats.hp += 150
     elif(num in range(13,16)):
-        print("You see a clear purple potion and decide to drink it. The potion grants you 5 skill points!\n")
-        p.stats.sp += 5
+        print("You see a clear purple potion and decide to drink it. The potion grants you 8 skill points!\n")
+        p.stats.sp += 8
         p.skillRaise()
     elif(num in range(16,18)):
         print("You pick up a glowing red orb, you wonder what this orb does\n")
@@ -1533,18 +1630,18 @@ def loot_l(p, level):
         print("Your " + p.weapon.name + " starts glowing! The orb is a weapon enchanter!")
         upgrade = random_num(2)
         if(upgrade == 1):
-            points = randomish_num(5)
+            points = randomish_num(14)
             print("Your weapon gains " + str(points) + " speed points!\n")   
             p.weapon.speed += points
         else:
-            points = randomish_num(7)
+            points = randomish_num(10)
             print("Your weapon gains " + str(points) + " damage points!\n")   
             p.weapon.damage += points
     elif(num in range(18,20)):
         print("You pick up a glowing blue orb, you wonder what this orb does\n")
         pause()
         print("Your " + p.armor.name + " starts glowing! The orb is an armor enchanter!")
-        points = randomish_num(6)
+        points = randomish_num(10)
         print("Your armor gains " + str(points) + " resistance points!\n")   
         p.armor.resistance += points
         p.stats.totalHP += points
@@ -1758,9 +1855,83 @@ def gladiator(p):
         else:
             choiceInputFail()
 
+def dragonlayer(p):
+    print("You are in shock that you survived those dungeons!\n")
+    pause()
+    print("You take the elemental stones and they align in your hand and they start spinning rapidly\n")
+    pause()
+    print("They gleam in the light and teleport you straight to the dragon's layer...")
+    pause()
+    print("You were not expecting to jump into another fight...\n")
+    pause()
+    print("The dragon breathes fire all around you... a flame circle surrounds you as you grip your " + p.weapon.name + " tightly!")
+    pause()
+    battle(p, fireDragon)
+    print("The dragon screams with pain... it echos throughout the lands... You did it...\n")
+    pause()
+    print("Your arms ache in pain as you drop your " + p.weapon.name + " to the ground...\n")
+    pause()
+    print("You return on the same path as you came and restore peace and order in the world...\n")
+    pause()
+    print("YOU WON!!!!!!!!!!!!!!!!!\n")
+    print("YOU WON!!!!!!!!!!!!!!!!!\n")
+    print("YOU WON!!!!!!!!!!!!!!!!!\n")
+    print("YOU WON!!!!!!!!!!!!!!!!!\n")
+    print("YOU WON!!!!!!!!!!!!!!!!!\n")
+    print("YOU WON!!!!!!!!!!!!!!!!!\n")
+    print("YOU WON!!!!!!!!!!!!!!!!!\n")
+    print("YOU WON!!!!!!!!!!!!!!!!!\n")
+
 def pause():
     input(" ")
     clear()
+
+
+demonlord = hardMonsters("boss", "demon lord")
+
+lavagoblin = mediumMonsters("normal", "lava goblin")
+magmagolem = mediumMonsters("boss", "magma golem")
+darkphoenix = mediumMonsters("boss", "dark phoenix")
+ifrit = hardMonsters("normal", "ifrit")
+firebird  = hardMonsters("normal", "firebird")
+firedemon = hardMonsters("fast", "fire demon")
+deathstar = hardMonsters("normal", "hellhound")
+cerberus = hardMonsters("slow", "cerberus")
+hellhound = hardMonsters("slow", "hellhound")
+lavashark = hardMonsters("slow", "lava shark")
+chimera = hardMonsters("normal", "chimera")
+
+lavamonsters = [lavagoblin, magmagolem, darkphoenix, ifrit, firebird, firedemon, deathstar, cerberus, hellhound, lavashark, chimera]
+
+icetitan = hardMonsters("boss", "ice titan")
+
+snowSerpent = hardMonsters("normal", "snow serpent")
+yeti = mediumMonsters("boss", "yeti")
+colossus = mediumMonsters("boss", "colossus")
+iceknight = hardMonsters("normal", "ice knight")
+iceskeleton = hardMonsters("normal", "ice skeleton")
+sabertooth = hardMonsters("normal", "sabertooth")
+frostgiant = hardMonsters("slow", "frost giant")
+icegolem = hardMonsters("slow", "ice golem")
+fsamurai = hardMonsters("fast", "frosted samurai")
+icewerewolf = hardMonsters("normal", "ice werewolf")
+
+icemonsters = [snowSerpent, yeti, colossus, iceknight, iceskeleton, sabertooth, frostgiant, icegolem, fsamurai, icewerewolf]
+
+tarturus = hardMonsters("boss", "tarturus")
+
+earthgolem = hardMonsters("fast", "earth golem")
+earthSkeleton = hardMonsters("fast", "skeleton")
+earthminotaur = hardMonsters("slow", "minotaur")
+earthorc = hardMonsters("fast", "orc")
+ghoul = hardMonsters("fast", "ghoul")
+trex = mediumMonsters("boss", "tyrannosaurus")
+rockelemental = mediumMonsters("boss", "rock elemental")
+earthlion = hardMonsters("normal", "earth lion")
+earthwarlock = hardMonsters("normal", "warlock")
+earthogre = hardMonsters("normal", "ogre")
+
+earthmonsters = [earthgolem, earthSkeleton, earthminotaur, earthorc, ghoul, trex, rockelemental, earthlion, earthwarlock, earthogre]
 
 alienWarlord = mediumMonsters("boss", "alien warlord")
 
@@ -1846,6 +2017,9 @@ spirit = easyMonsters("fast", "dark spirit")
 robot = easyMonsters("normal", "robot")
 
 forestCreatures = [spider, zombie, ogre, goblin, mummy, werewolf, spirit, robot]
+
+bosses = [forestlord, riverboss, skyboss, queenSpider, poseidon, alienWarlord, tarturus, icetitan, demonlord, fireDragon]
+
 def game():
     print("You leave early morning, and come across to a nearby village for food and supplies\n")
     wolfStats = getStats(5, 10, 0, 20)
@@ -1856,12 +2030,14 @@ def game():
     pause()
     forest(p)
     labyrinth(p)
+    dragonsden(p)
+    dragonlayer(p)
 
 clear()
 name = input("Hello! What is your name, soldier\n")
-playerStats = getStats(150, 30, 25, 500)
+clear()
+playerStats = getStats(15, 40, 25, 50)
 p = Player(name, playerStats)
-labyrinth(p)
 print("Hello, " + p.name + ". You are chosen to go on this quest to slay the fire dragon!\n")
 input("press enter to continue")
 clear()
