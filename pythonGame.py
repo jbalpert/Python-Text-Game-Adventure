@@ -108,9 +108,10 @@ class Player:
             print("YUM! Eating the " + item.name + " added " + str(item.rations) + " to your mana and saturation!\n")
             self.stats.addHunger(item.rations)
             self.stats.addMana(item.rations)
-        elif(item_type == "health"):
-            print("Drinking the " + item.name + " added " + str(item.rations) + " to your mana and saturation!\n")
-            self.addHealth(item.health)
+        elif(item_type == "potion"):
+            print("Drinking the " + item.name + " added " + str(item.health) + " to your mana and saturation!\n")
+            self.stats.addHealth(item.health)
+            self.stats.addMana(item.health)
         elif(item_type == "spell"):
             self.spell = item
 
@@ -370,12 +371,13 @@ spells = [lightning, firebolt, iceshard, earthquake, tornado, plasma, sunstrike,
 
 # Potions:
 
-small_hp = Potion("Small HP potion", 15, 50)
-medium_hp = Potion("Medium HP potion", 35, 100)
-large_hp = Potion("Large HP potion", 75, 250)
+small_hp = Potion("Small HP potion", 15, 30)
+medium_hp = Potion("Medium HP potion", 35, 50)
+large_hp = Potion("Large HP potion", 75, 80)
 full_hp = Potion("Full HP potion", 100, 10000)
+out_of_pots = Potion("Out of potions", 99999, 9999)
 
-potions = [small_hp, small_hp, medium_hp, medium_hp, small_hp, large_hp, full_hp, medium_hp, small_hp, large_hp, full_hp]
+potions = [small_hp, small_hp, medium_hp, medium_hp, small_hp, large_hp, full_hp, medium_hp, small_hp, large_hp, full_hp, out_of_pots]
 
 # Food:
 
@@ -389,8 +391,9 @@ icecream = Food("icecream", 15, 15)
 pizza = Food("pizza", 15, 15)
 hamburger = Food("hamburger", 15, 15)
 cereal = Food("cereal", 15, 15)
+outoffood = Food("out of food", 99999, 9999)
 
-food = [banana, muffin, pancake, soup, lasagne, wontons, icecream, pizza, hamburger]
+food = [banana, muffin, pancake, soup, lasagne, wontons, icecream, pizza, hamburger, outoffood]
 
 # Weapons:
 
@@ -409,8 +412,9 @@ battle_axe = Weapon("battle axe", 670, 48, 3)
 war_hammer = Weapon("war hammer", 1025, 72, 10)
 lightsaber = Weapon("Lightsaber", 1650, 100, 75)
 zeus = Weapon("Zeus's Bolt",2500 ,185, 100)
+alloutofstock = Weapon("Out of stock", 99999, 9999, 999)
 
-weapons = [stick, butter_knife, shortsword, katana, axe, butcher_knife, spear, sword, machete, war_scythe, battle_axe, war_hammer, lightsaber, zeus]
+weapons = [stick, butter_knife, shortsword, katana, axe, butcher_knife, spear, sword, machete, war_scythe, battle_axe, war_hammer, lightsaber, zeus, alloutofstock]
 
 # Armor:
 
@@ -425,8 +429,9 @@ chromium = Armor("chromium armor", 570, 49)
 celestial = Armor("celestial armor", 715, 64)
 dimensional = Armor("dimensional armor", 1120, 100)
 vibranium = Armor("vibranium armor", 2000, 150)
+alloutofstockarmor = Armor("out of stock", 99999, 9999)
 
-armor = [silk, leather, chainmail, copper, iron, steele, chromium, celestial, dimensional, vibranium]
+armor = [silk, leather, chainmail, copper, iron, steele, chromium, celestial, dimensional, vibranium, alloutofstockarmor]
 
 # Simple way to implement stats in an enemy or player 
 def getStats(strength, dexterity, intelligence, health):
@@ -673,7 +678,6 @@ def forest(p):
             navigateF(p)
         else:
             yesnoInputFail()
-        print(str(p.bossesDefeated) + "*******************************\n")
         if(p.bossesDefeated >= 2):
             response = ""
             while response not in yes_no:
@@ -910,6 +914,7 @@ def printBlacksmith():
 
 def canBuy(p, cost):
     if(p.coins >= cost):
+        p.coins -= cost
         return True
     print("You can't afford to buy this!\n")
     return False
@@ -1133,7 +1138,7 @@ def talkCentaur(p):
             print("Go at once, and take this necklace it will provide you with magic powers")
             print("You put on the necklace and receive +7 intelligence")
             p.stats.int += 7
-            print("You now have " + p.stats.int + " Intelligence!")
+            print("You now have " + str(p.stats.int) + " Intelligence!")
             pause()
             print("One last thing traveler, if you get to the village of siawathi and go to the shopping district type: YEET\n")
         elif(response == "n"):
