@@ -71,7 +71,7 @@ class Player:
         self.armor = cloth
         self.spell = spells[0]
         self.escape = False
-        self.bossesDefeated = 0
+        self.bossesDefeated = 3
 
     def print_coins(self):
         print("You currently have " + str(p.coins) + " coins!\n")
@@ -353,14 +353,14 @@ class Stats:
 # Spells
 
 lightning = Spell("Lightning bolt", "lightning strikes upon enemy", 3, .75)
-firebolt = Spell("Firebolt", "Throws flames at enemy", 4, .78)
-iceshard = Spell("Ice shard", "Powerful ice strike", 5, .82)
-earthquake = Spell("Earth shatter", "Earthquake rumbles enemy", 6, .87)
-tornado = Spell("Tornado", "Tornado hits enemy", 7, .93)
-plasma = Spell("Plasma ray", "Pelts enemy with pure plasma", 8, 1)
-sunstrike = Spell("Sun strike", "Sunrays beam down the enemy", 9, 1.1)
-meteor = Spell("Meteor shower", "Crushes enemy from above", 10, 1.25)
-snap = Spell("Thanos snap", "I am inevitable", 20, 2)
+firebolt = Spell("Firebolt", "Throws flames at enemy", 3, .78)
+iceshard = Spell("Ice shard", "Powerful ice strike", 3, .82)
+earthquake = Spell("Earth shatter", "Earthquake rumbles enemy", 4, .87)
+tornado = Spell("Tornado", "Tornado hits enemy", 4, .93)
+plasma = Spell("Plasma ray", "Pelts enemy with pure plasma", 4, 1)
+sunstrike = Spell("Sun strike", "Sunrays beam down the enemy", 5, 1.1)
+meteor = Spell("Meteor shower", "Crushes enemy from above", 5, 1.25)
+snap = Spell("Thanos snap", "I am inevitable", 5, 2)
 
 spells = [lightning, firebolt, iceshard, earthquake, tornado, plasma, sunstrike, meteor, snap]
 
@@ -580,7 +580,7 @@ def battle(player, enemy):
         pause()
     if(player.stats.hp <= 0):
         print("You lose! Should've trained harder! THE END! \n")
-        sys.exit(":(")
+        gameoverOption(player)
     elif(player.escape):
         print("You left quickly to saftey! Phew that was a close one!\n")
         enemy.stats.toFullHealth()
@@ -626,6 +626,9 @@ def fight(player, enemy, turn):
                 player.attack(enemy)
             elif(response == "2" and player.stats.mana >= player.spell.mana):
                 player.castSpell(enemy)
+            elif(response == "2" and player.stats.mana < player.spell.mana):
+                print("You don't have enough mana to cast the spell!\n")
+                response = ""
             elif(response == "3"):
                 player.rest()
             elif(response == "4"):
@@ -634,7 +637,7 @@ def fight(player, enemy, turn):
             elif(response == "5"):
                 player.print_stats()
             else:
-                print("You need to respond with 1, 2, 3, or 4 or you don't have enough mana to cast the spell!\n")
+                print("You need to respond with 1, 2, 3, or 4!\n")
         return enemy.name
     elif(turn == enemy.name):
         enemy.attack(player)
@@ -650,7 +653,7 @@ def clear():
     os.system('cls||clear')
 
 def forest(p):
-    continueQuest = True
+    continueQuest = False
     response = ""
     print("You come across a dense forest with towering trees, you have a bad feeling about this.")
     print("Despite your concerns, you are a warrior and continue and enter the forest")
@@ -664,25 +667,23 @@ def forest(p):
             navigateF(p)
         else:
             yesnoInputFail()
+        print(str(p.bossesDefeated) + "*******************************\n")
         if(p.bossesDefeated >= 2):
+            response = ""
             while response not in yes_no:
                 response = input("would you like to continue your quest (Y) or go back to the forest (N) (Y/N) \n warning you must complete another boss to come back to this message \n").lower()
                 clear()
                 if(response == 'y'):
-                    pass
+                    continueQuest = True
                 elif(response == 'n'):
                     continueQuest = False
                 else:
                     yesnoInputFail()
-        elif(not (p.bossesDefeated >= 2) and response in yes_no):
-            print("You got so confused navigating the land that you came back to the same first path!")
-            print("Defeat two bosses to find the next piece of the map!\n")
         if(not continueQuest):
             response = ""
-
-        elif(response in yes_no):
             print("You got so confused navigating the land that you came back to the same first path!")
             print("Defeat two bosses to find the next piece of the map!\n")
+
 
 def labyrinth(p):
     bossesBeat = p.bossesDefeated + 1
@@ -698,24 +699,30 @@ def labyrinth(p):
     print("You go to the local shopping district and see that there are a few shops that interest you\n")
     shoppingDistrict(p)
     response = ""
-    while response != "l" and bossesBeat <= p.bossesDefeated:
+    while (response != "l") or (bossesBeat > p.bossesDefeated):
         labyrinthPaths()
         response = input("Where would you like to go? (1, 2, 3, or 4)\n").lower()
         clear()
         if(response == "1"):
             shoppingDistrict(p)
         elif(response == "2"):
-            getZone(p, "abandoned cave", zoneText, caveMonsters, queenSpider)
+            getZone(p, "abandoned cave", zoneText, caveMonsters, queenSpider, 1.2)
+            print("You find your way back out of the cave and return to Siawathi!\n")
         elif(response == "3"):
-            getZone(p, "atlantis", zoneText, oceanMonsters, poseidon)
+            getZone(p, "atlantis", zoneText, oceanMonsters, poseidon, 1.3)
+            print("You find your way back out of the water and return to Siawathi!")
+            print("The person who lended you the aquatic equipment allows you to return it for free for rescuing Poseidon\n")
         elif(response == "4"):
-            getZone(p, "xeon8", zoneText, alienMonsters, alienWarlord)
-        elif(response == "l"):
+            getZone(p, "xeon8", zoneText, alienMonsters, alienWarlord, 1.2)
+            print("After defeating the alien warlord, you take one of their space pods and return to Siawathi")
+            print("After being ubducted by aliens, you decide not to frolic the fields any more\n")
+        elif(response == "l" and bossesBeat <= p.bossesDefeated):
             print("You decide to leave the area after all that action!\n")
-            if(bossesBeat > p.bossesDefeated):
-                print("You still need to defeat a boss!\n")
+        elif(response == "l" and bossesBeat > p.bossesDefeated):
+            print("You still need to defeat a boss!\n")
         else:
             choiceInputFail()
+        pause()
 def labyrinthPaths():
     print("********************************************************")
     print("     Location:                                          ")
@@ -819,7 +826,7 @@ def bar(p):
                     print("You see the room spinning and grab a table, you probably shouldn't drink anymore")
                 else:
                     print("You lose! Should've known when to stop drinking! THE END! \n")
-                    sys.exit(":(")
+                    gameoverOption(p)
                 drinks += 1
         elif(response == "3"):
             print("A man with an eyepatch spits on you, and says: you came to the wrong bar\n")
@@ -831,6 +838,19 @@ def bar(p):
             pause()
         else:
             print("Please select 1, 2, 3, 4, or L to leave!\n")  
+
+def gameoverOption(p):
+    print("GAME OVER!\n")
+    response = ""
+    while response not in yes_no:
+        response = input("Would you like to continue? (Y/N)\n").lower()
+        if(response == "y"):
+            p.stats.toFullSaturation()
+            game()
+        elif(response == "n"):
+            sys.exit()
+        else:
+            yesnoInputFail()
 
 def printBar():
     print("********************************************")
@@ -1130,7 +1150,7 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
         battle(p, monster)
         print("You received a wand to teleport you back to the village shop and go back to the shop\n")
         pause()
-        store(wolf, 5)
+        store(werewolf, 5)
         print("The wand fizzles out as you return back to the dungeon\n")
         pause()
     elif(chance in range(4,6)):
@@ -1281,7 +1301,7 @@ def dungeonFate(p, direction, monsterArr, boss, level=1):
         p.stats.hp -= 10
         if(p.stats.hp <= 0):
             print("You lose! Should've trained harder! THE END! \n")
-            sys.exit(":(")
+            gameoverOption(p)
     elif(chance == 19):
         choice = ""
         while choice not in yes_no:
@@ -1538,11 +1558,11 @@ def loot_l(p, level):
         print_skills()
     pause()
 
-def getZone(p, zone, zoneText, monsterArr, boss):
+def getZone(p, zone, zoneText, monsterArr, boss, level):
     print(zoneText[zone])
     pause()
     response = ""
-    while response not in choices:
+    while response != "q":
         displayPaths(zone)
         response = input("Select a path to choose (1, 2, 3, or 4)\n")
         clear()
@@ -1555,11 +1575,14 @@ def getZone(p, zone, zoneText, monsterArr, boss):
             response = ""
         elif(response == "2"):
             preDungeon(zone)
-            dungeon(p, zone, randomish_num(8), monsterArr, 1, boss)
+            dungeon(p, zone, randomish_num(8), monsterArr, level, boss)
+            response = "q"
         elif(response == "3"):
-            response = chanceFate(p, monsterArr)
+            chanceFate(p, monsterArr)
+            response = ""
         elif(response == "4"):
-            response = chanceFate(p, monsterArr)
+            chanceFate(p, monsterArr)
+            response = ""
         else:
             choiceInputFail()
 
@@ -1633,13 +1656,16 @@ def navigateF(p):
                     battle(p, monster)
                 else:
                     yesnoInputFail()
-                getZone(p, "sky", zoneText, skyCreatures, skyboss)
+                getZone(p, "sky", zoneText, skyCreatures, skyboss, 1)
+            response = "1"
+                
         elif(response == "2"):
-            getZone(p, "river", zoneText, riverCreatures, riverboss)
+            getZone(p, "river", zoneText, riverCreatures, riverboss, 1)
         elif(response == "3"):
-            getZone(p, "forest", zoneText, forestCreatures, forestlord)
+            getZone(p, "forest", zoneText, forestCreatures, forestlord, 1)
         elif(response == "4"):
-            response = chanceFate(p, forestCreatures)
+            chanceFate(p, forestCreatures)
+            response = ""
         else:
             choiceInputFail()
 
@@ -1820,11 +1846,22 @@ spirit = easyMonsters("fast", "dark spirit")
 robot = easyMonsters("normal", "robot")
 
 forestCreatures = [spider, zombie, ogre, goblin, mummy, werewolf, spirit, robot]
+def game():
+    print("You leave early morning, and come across to a nearby village for food and supplies\n")
+    wolfStats = getStats(5, 10, 0, 20)
+    wolf = Enemy("wolf", wolfStats, 8, 8)
+    store(wolf, 5)
+    print("You ask one of the villagers and receive piece of a map to the dragon's den.")
+    print("Looking at the map you need to first travel through the forest of darkness")
+    pause()
+    forest(p)
+    labyrinth(p)
 
 clear()
 name = input("Hello! What is your name, soldier\n")
-playerStats = getStats(15, 30, 25, 50)
+playerStats = getStats(150, 30, 25, 500)
 p = Player(name, playerStats)
+labyrinth(p)
 print("Hello, " + p.name + ". You are chosen to go on this quest to slay the fire dragon!\n")
 input("press enter to continue")
 clear()
@@ -1833,12 +1870,4 @@ print_skills()
 print("These skills are going to play a roll in whether you defeat the dragon or not\n")
 pause()
 # Begin Game!
-print("You leave early morning, and come across to a nearby village for food and supplies\n")
-wolfStats = getStats(4, 15, 0, 20)
-wolf = Enemy("wolf", wolfStats, 8, 8)
-store(wolf, 5)
-print("You ask one of the villagers and receive piece of a map to the dragon's den.")
-print("Looking at the map you need to first travel through the forest of darkness")
-pause()
-forest(p)
-labyrinth(p)
+game()
